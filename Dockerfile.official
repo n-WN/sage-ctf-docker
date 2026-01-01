@@ -116,7 +116,7 @@ RUN set -eux; \
 RUN set -eux; \
   # Base image appends a hard PATH reset at the end of ~/.bashrc, which breaks
   # Sage's runtime environment when entering the container with `bash`.
-  sed -i '/^export PATH=\\/home\\/sage\\/sage\\/local\\/bin:/d' /home/sage/.bashrc; \
+  sed -i '\\|^export PATH=/home/sage/sage/local/bin:|d' /home/sage/.bashrc; \
   grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc || cat >> /home/sage/.bashrc <<'EOF'
 
 # --- sage-ctf-docker: source CTF env (python -> py3.13) ---
