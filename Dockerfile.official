@@ -125,7 +125,8 @@ RUN set -eux; \
   cat > /opt/ctf/env.sh <<'EOF'
 #!/usr/bin/env bash
 export CTF_PY313=/opt/venvs/py313/bin/python
-export PATH=/opt/ctf/bin:"$PATH"
+export CTF_PY27=/opt/micromamba/envs/py27/bin/python
+export PATH=/opt/ctf/bin:/usr/local/sbin:/usr/local/bin:"$PATH"
 EOF
 
 RUN set -eux; \
@@ -174,6 +175,9 @@ RUN set -eux; \
   printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python -m pip \"$@\"\n' > /usr/local/bin/pip2; \
   chmod +x /usr/local/bin/py27; \
   chmod +x /usr/local/bin/python2 /usr/local/bin/pip2; \
+  ln -sfn /usr/local/bin/python2 /opt/ctf/bin/python2; \
+  ln -sfn /usr/local/bin/pip2 /opt/ctf/bin/pip2; \
+  ln -sfn /usr/local/bin/py27 /opt/ctf/bin/py27; \
   micromamba clean -a -y
 
 RUN set -eux; \
