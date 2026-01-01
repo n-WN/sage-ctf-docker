@@ -15,10 +15,14 @@ echo "[smoke] python3.13 (uv venv)"
 echo "[smoke] ctf shim + bashrc wiring"
 test -x /opt/ctf/env.sh
 test -x /opt/ctf/bin/python
+test -x /opt/ctf/bin/python3
+test -x /opt/ctf/bin/pip3
 /opt/ctf/bin/python -V | grep -qF 'Python 3.13'
 grep -qF 'source /opt/ctf/env.sh' /home/sage/.bashrc
 ! grep -qE '^export PATH=/home/sage/sage/local/bin:' /home/sage/.bashrc
 bash -ic 'python -V' 2>/dev/null | grep -qF 'Python 3.13'
+bash -ic 'python3 -V' 2>/dev/null | grep -qF 'Python 3.13'
+bash -ic 'pip3 -V' 2>/dev/null | grep -qF '(python 3.13)'
 if command -v sage >/dev/null; then
   sage --python -V | grep -qF 'Python 3.12'
 fi

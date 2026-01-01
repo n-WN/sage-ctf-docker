@@ -23,15 +23,15 @@ The image ships `/opt/verify/smoke.sh` which checks:
 
 ## Paths & usage cheatsheet
 
-容器内我们刻意做了“命令别名/入口”分流：**不覆盖 `python3`**（避免破坏 Sage 的交互启动），但默认让 `python/pip` 指向 CTF 主 Python 3.13。
+容器内我们做了“命令别名/入口”分流：交互式 `bash` 默认把 `python/python3/pip/pip3` 指向 CTF 主 Python 3.13；同时用 `sage` 包装器保证 Sage 启动时仍然使用 Sage 自己的 `python3`，避免被 CTF 环境影响。
 
 | 命令 | 真实入口/路径 | 指向/说明 |
 |---|---|---|
 | `sage` | `/usr/bin/sage` | SageMath 10.8（基于官方镜像） |
 | `sage --python` | (内部解析) | Sage 自带 venv 的 Python（当前为 3.12.x） |
 | `sage --pip` | (内部解析) | Sage 自带 venv 的 pip |
-| `python3` | `/home/sage/sage/local/bin/python3` | **Sage Python**（为保证 `sage` 交互正常） |
-| `pip3` | `/home/sage/sage/local/bin/pip3` | **Sage pip** |
+| `python3` | `/opt/ctf/bin/python3` → `/opt/venvs/py313/bin/python` | CTF 主 Python 3.13（交互 shell 默认） |
+| `pip3` | `/opt/ctf/bin/pip3` → `/opt/venvs/py313/bin/pip` | CTF 主 pip（py313，交互 shell 默认） |
 | `python` | `/opt/ctf/bin/python` → `/opt/venvs/py313/bin/python` | CTF 主 Python 3.13（uv venv） |
 | `pip` | `/opt/ctf/bin/pip` → `/opt/venvs/py313/bin/pip` | CTF 主 pip（py313） |
 | `python2` | `/usr/local/bin/python2` | micromamba `py27` 环境的 Python 2.7 |
@@ -46,9 +46,10 @@ The image ships `/opt/verify/smoke.sh` which checks:
 
 ### 默认 shell 行为（避免踩坑）
 
-- `docker run --rm -it ... bash`：交互式 `bash` 默认会 `source /opt/ctf/env.sh`，把 `python/pip` 指向 Python 3.13，但**不改变** `python3/pip3`。
+- `docker run --rm -it ... bash`：交互式 `bash` 默认会 `source /opt/ctf/env.sh`，把 `python/python3/pip/pip3` 指向 Python 3.13。
 - 关闭自动 source：`export CTF_AUTO_SOURCE=0`
-- 不推荐 `source /opt/venvs/py313/bin/activate`：它会覆盖 `python3`，可能导致交互式 `sage` 启动跑到 3.13 而异常。
+- 不推荐 `source /opt/venvs/py313/bin/activate`：会进一步改动 shell 状态；本仓库已经用 `/opt/ctf/env.sh` 解决 `python/python3` 的默认指向。
+- 如需强制使用 Sage 的 `python3/pip3`：用绝对路径 `/home/sage/sage/local/bin/python3`、`/home/sage/sage/local/bin/pip3`，或使用 `sage --python` / `sage --pip`。
 
 ### 源码位置（构建时拉取，SHA 在 `repro.lock`）
 
