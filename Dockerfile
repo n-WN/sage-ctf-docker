@@ -28,6 +28,7 @@ ARG OR_TOOLS_REF=""
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     UV_HTTP_TIMEOUT=300 \
+    HOME=/home/sage \
     MAMBA_ROOT_PREFIX=/opt/micromamba
 
 SHELL ["/bin/bash", "-lc"]

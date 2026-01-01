@@ -2,6 +2,7 @@
 set -euo pipefail
 
 echo "[smoke] python3.13 (uv venv)"
+/opt/venvs/py313/bin/python -c "import os; assert os.environ.get('HOME') in ('/home/sage','/root'); print('ok: HOME=' + os.environ.get('HOME',''))"
 /opt/venvs/py313/bin/python -V
 /opt/venvs/py313/bin/python -c "import pwn; print('ok: pwntools')"
 /opt/venvs/py313/bin/python -c "import paramiko, rpyc; print('ok: paramiko/rpyc')"
