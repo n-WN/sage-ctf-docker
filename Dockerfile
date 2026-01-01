@@ -184,8 +184,7 @@ RUN set -eux; \
 # Source the CTF env in interactive shells by default.
 # Disable by setting `CTF_AUTO_SOURCE=0`.
 RUN set -eux; \
-  if ! grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc 2>/dev/null; then \
-    cat >> /home/sage/.bashrc <<'EOF'
+  grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc 2>/dev/null || cat >> /home/sage/.bashrc <<'EOF'
 
 # --- sage-ctf-docker: source CTF env (python -> py3.13) ---
 case "$-" in
@@ -197,7 +196,7 @@ case "$-" in
 esac
 # ---------------------------------------------------------
 EOF
-  fi; \
+  ; \
   chown sage:sage /home/sage/.bashrc
 
 USER sage
