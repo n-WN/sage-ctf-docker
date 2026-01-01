@@ -9,6 +9,7 @@ This repository builds a reproducible Docker image for CTF crypto/reversing that
 - Python 2.7 (fallback): isolated `micromamba` env at `/opt/micromamba/envs/py27` with shims (`python2`/`pip2`/`py27`).
 - Sage 10.8: system `sage` CLI from the base image.
 - Rust toolchain: `rustup` (official installer), pinned toolchain via `repro.lock`.
+- JS tooling: Node.js + Bun (pinned, installed from official upstream release artifacts).
 - Tools: `flatter` (LLL accelerator), `r2` (radare2, built from source), `tshark`, headless Java runtime.
 - Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `or-tools` (cloned at pinned SHAs).
 
@@ -45,6 +46,9 @@ The image ships `/opt/verify/smoke.sh` which checks:
 | `r2` | `/usr/local/bin/r2` | radare2 |
 | `tshark` | `/usr/bin/tshark` | 抓包/PCAP 工具 |
 | `java` | `/usr/bin/java` | Java runtime（headless） |
+| `node` | `/usr/local/bin/node` | Node.js（用于 CTF/web tooling） |
+| `npm` | `/usr/local/bin/npm` | Node.js 包管理器 |
+| `bun` | `/usr/local/bin/bun` | Bun（JS runtime + package manager） |
 | `rustc` | `/home/sage/.cargo/bin/rustc` | Rust 编译器（rustup，toolchain 见 `repro.lock`） |
 | `cargo` | `/home/sage/.cargo/bin/cargo` | Rust 包管理器 |
 

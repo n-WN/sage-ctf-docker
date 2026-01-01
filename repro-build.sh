@@ -128,6 +128,54 @@ print(ver)
 PY
 }
 
+resolve_node_lts_version() {
+  python3 - <<'PY'
+import json, urllib.request
+idx = json.load(urllib.request.urlopen("https://nodejs.org/dist/index.json", timeout=60))
+lts = [x for x in idx if x.get("lts")]
+if not lts:
+    raise SystemExit("failed to resolve node LTS from index.json")
+ver = lts[0]["version"]
+if ver.startswith("v"):
+    ver = ver[1:]
+print(ver)
+PY
+}
+
+resolve_node_sha256() {
+  local version="${1:?missing node version}"
+  local filename="${2:?missing node filename}"
+  python3 - <<PY
+import urllib.request
+version="${version}"
+filename="${filename}"
+shasums = urllib.request.urlopen(f"https://nodejs.org/dist/v{version}/SHASUMS256.txt", timeout=60).read().decode("utf-8")
+for line in shasums.splitlines():
+    parts=line.split()
+    if len(parts) >= 2 and parts[-1] == filename:
+        print(parts[0])
+        raise SystemExit(0)
+raise SystemExit(f"missing {filename} in SHASUMS256.txt for node v{version}")
+PY
+}
+
+resolve_bun_version() {
+  git ls-remote --tags --refs "https://github.com/oven-sh/bun.git" \
+    | awk '{print $2}' \
+    | sed 's#refs/tags/##' \
+    | sed 's/^bun-v//' \
+    | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+    | sort -V \
+    | tail -n 1
+}
+
+resolve_bun_sha256() {
+  local version="${1:?missing bun version}"
+  local arch="${2:?missing bun arch (x64|aarch64)}"
+  local url="https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-linux-${arch}.zip"
+  curl -fsSL "${url}" | sha256sum | awk '{print $1}'
+}
+
 write_lock() {
   local sage_repo="https://github.com/sagemath/sage.git"
   local flatter_repo="https://github.com/keeganryan/flatter.git"
@@ -141,6 +189,20 @@ write_lock() {
   uv_version="$(latest_git_tag "https://github.com/astral-sh/uv.git")"
   micromamba_version="$(latest_git_tag "https://github.com/mamba-org/micromamba-releases.git")"
   rust_toolchain="$(resolve_rust_stable_toolchain)"
+
+  local node_version node_sha_linux_x64 node_sha_linux_arm64
+  node_version="$(resolve_node_lts_version)"
+  node_sha_linux_x64="$(resolve_node_sha256 "${node_version}" "node-v${node_version}-linux-x64.tar.xz")"
+  node_sha_linux_arm64="$(resolve_node_sha256 "${node_version}" "node-v${node_version}-linux-arm64.tar.xz")"
+
+  local bun_version bun_sha_linux_x64 bun_sha_linux_arm64
+  bun_version="$(resolve_bun_version)"
+  if [ -z "${bun_version}" ]; then
+    echo "failed to resolve bun version" >&2
+    exit 1
+  fi
+  bun_sha_linux_x64="$(resolve_bun_sha256 "${bun_version}" "x64")"
+  bun_sha_linux_arm64="$(resolve_bun_sha256 "${bun_version}" "aarch64")"
 
   local sage_ref flatter_ref radare2_ref gf2bv_ref crypto_attacks_ref or_tools_ref
   sage_ref="$(tag_sha "$sage_repo" "${SAGE_VERSION}")"
@@ -157,6 +219,14 @@ BASE_IMAGE="${base_image}"
 UV_VERSION="${uv_version}"
 MICROMAMBA_VERSION="${micromamba_version}"
 RUST_TOOLCHAIN="${rust_toolchain}"
+
+NODE_VERSION="${node_version}"
+NODE_SHA256_LINUX_X64="${node_sha_linux_x64}"
+NODE_SHA256_LINUX_ARM64="${node_sha_linux_arm64}"
+
+BUN_VERSION="${bun_version}"
+BUN_SHA256_LINUX_X64="${bun_sha_linux_x64}"
+BUN_SHA256_LINUX_ARM64="${bun_sha_linux_arm64}"
 
 SAGE_REPO="${sage_repo}"
 SAGE_VERSION="${SAGE_VERSION}"
@@ -187,11 +257,24 @@ fi
 # shellcheck disable=SC1090
 source "${LOCK_FILE}"
 
+: "${NODE_VERSION:?missing NODE_VERSION in repro.lock (run: ./repro-build.sh --update)}"
+: "${NODE_SHA256_LINUX_X64:?missing NODE_SHA256_LINUX_X64 in repro.lock (run: ./repro-build.sh --update)}"
+: "${NODE_SHA256_LINUX_ARM64:?missing NODE_SHA256_LINUX_ARM64 in repro.lock (run: ./repro-build.sh --update)}"
+: "${BUN_VERSION:?missing BUN_VERSION in repro.lock (run: ./repro-build.sh --update)}"
+: "${BUN_SHA256_LINUX_X64:?missing BUN_SHA256_LINUX_X64 in repro.lock (run: ./repro-build.sh --update)}"
+: "${BUN_SHA256_LINUX_ARM64:?missing BUN_SHA256_LINUX_ARM64 in repro.lock (run: ./repro-build.sh --update)}"
+
 BUILD_ARGS=(
   --build-arg "BASE_IMAGE=${BASE_IMAGE}"
   --build-arg "UV_VERSION=${UV_VERSION}"
   --build-arg "MICROMAMBA_VERSION=${MICROMAMBA_VERSION}"
   --build-arg "RUST_TOOLCHAIN=${RUST_TOOLCHAIN}"
+  --build-arg "NODE_VERSION=${NODE_VERSION}"
+  --build-arg "NODE_SHA256_LINUX_X64=${NODE_SHA256_LINUX_X64}"
+  --build-arg "NODE_SHA256_LINUX_ARM64=${NODE_SHA256_LINUX_ARM64}"
+  --build-arg "BUN_VERSION=${BUN_VERSION}"
+  --build-arg "BUN_SHA256_LINUX_X64=${BUN_SHA256_LINUX_X64}"
+  --build-arg "BUN_SHA256_LINUX_ARM64=${BUN_SHA256_LINUX_ARM64}"
   --build-arg "SAGE_REPO=${SAGE_REPO}"
   --build-arg "SAGE_REF=${SAGE_REF}"
   --build-arg "FLATTER_REPO=${FLATTER_REPO}"
