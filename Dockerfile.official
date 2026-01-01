@@ -50,7 +50,7 @@ RUN set -eux; \
 
 # Create a stable symlink to Sage's Python venv (path includes the Python patch version).
 RUN set -eux; \
-  venv_root="$(/usr/bin/sage -python -c 'import sys, pathlib; print(pathlib.Path(sys.executable).resolve().parent.parent)')"; \
+  venv_root="$(/usr/bin/sage --python -c 'import sys, pathlib; print(pathlib.Path(sys.executable).resolve().parent.parent)')"; \
   ln -sfn "${venv_root}" /home/sage/sage/local/var/lib/sage/venv
 
 # radare2 (r2) is not shipped in Ubuntu 22.04 apt repos; build from source for reproducibility.
@@ -114,6 +114,9 @@ RUN set -eux; \
 # Source the CTF env in interactive shells by default.
 # Disable by setting `CTF_AUTO_SOURCE=0`.
 RUN set -eux; \
+  # Base image appends a hard PATH reset at the end of ~/.bashrc, which breaks
+  # Sage's runtime environment when entering the container with `bash`.
+  sed -i '/^export PATH=\\/home\\/sage\\/sage\\/local\\/bin:/d' /home/sage/.bashrc; \
   grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc || cat >> /home/sage/.bashrc <<'EOF'
 
 # --- sage-ctf-docker: source CTF env (python -> py3.13) ---
@@ -208,13 +211,13 @@ RUN set -eux; \
 
 COPY requirements/sage.txt /tmp/requirements-sage.txt
 RUN set -eux; \
-  SAGE_PY="$(sage -python -c 'import sys; print(sys.executable)')"; \
+  SAGE_PY="$(sage --python -c 'import sys; print(sys.executable)')"; \
   uv pip install --python "${SAGE_PY}" -r /tmp/requirements-sage.txt; \
   :
 
 RUN set -eux; \
   cd /opt/src/crypto-attacks; \
-  sage -python -m unittest discover -s test -t . -v
+  sage --python -m unittest discover -s test -t . -v
 
 USER root
 COPY verify/smoke.sh /opt/verify/smoke.sh

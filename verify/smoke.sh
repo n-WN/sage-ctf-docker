@@ -14,6 +14,10 @@ echo "[smoke] python3.13 (uv venv)"
 
 echo "[smoke] bash interactive default (python -> py3.13)"
 bash -ic 'python -V' | grep -qF 'Python 3.13'
+echo "[smoke] bash interactive keeps Sage python3"
+bash -ic 'python3 -V' | grep -qF 'Python 3.12'
+echo "[smoke] bash interactive keeps Sage working"
+bash -ic 'sage -c "print(2+2)"' >/dev/null
 
 echo "[smoke] system tools"
 command -v java >/dev/null
@@ -44,21 +48,21 @@ if command -v sage >/dev/null; then
     exit 1
   fi
   sage -c "print('ok: sage', (2+2))"
-  sage -python -c "import Crypto; print('ok: sage pycryptodome')"
-  sage -python -c "import pwn; print('ok: sage pwntools')"
-  sage -python -c "import paramiko, rpyc; print('ok: sage paramiko/rpyc')"
-  sage -python -c "import unicorn; print('ok: sage unicorn')"
-  sage -python -c "import cryptography, nacl; print('ok: sage cryptography/pynacl')"
-  sage -python -c "import z3; print('ok: sage z3')"
-  sage -python -c "import zstandard; print('ok: sage zstandard')"
+  sage --python -c "import Crypto; print('ok: sage pycryptodome')"
+  sage --python -c "import pwn; print('ok: sage pwntools')"
+  sage --python -c "import paramiko, rpyc; print('ok: sage paramiko/rpyc')"
+  sage --python -c "import unicorn; print('ok: sage unicorn')"
+  sage --python -c "import cryptography, nacl; print('ok: sage cryptography/pynacl')"
+  sage --python -c "import z3; print('ok: sage z3')"
+  sage --python -c "import zstandard; print('ok: sage zstandard')"
 else
   echo "[smoke] sage missing; skip sage checks (build with SAGE_BUILD_STEP=make)" >&2
 fi
 
-echo "[smoke] crypto-attacks unit tests (sage -python)"
+echo "[smoke] crypto-attacks unit tests (sage --python)"
 if command -v sage >/dev/null; then
   cd /opt/src/crypto-attacks
-  sage -python -m unittest discover -s test -t . -v
+  sage --python -m unittest discover -s test -t . -v
 else
   echo "[smoke] sage missing; skip crypto-attacks tests (build with SAGE_BUILD_STEP=make)" >&2
 fi

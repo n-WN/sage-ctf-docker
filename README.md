@@ -19,13 +19,13 @@ The image ships `/opt/verify/smoke.sh` which checks:
 - Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`.
 - `gf2bv` runs under Python 3.13 (only; see notes below).
 - System tools present: `java`, `r2`, `tshark`, `flatter`.
-- `crypto-attacks` unit tests pass under `sage -python` (85 tests).
+- `crypto-attacks` unit tests pass under `sage --python` (85 tests).
 
 ## Paths & usage cheatsheet
 
 - SageMath:
   - Binary: `/usr/bin/sage` (symlink to `/home/sage/sage/sage`)
-  - Sage Python: `sage -python` (prints the Sage venv interpreter)
+  - Sage Python: `sage --python` (runs the Sage venv interpreter)
   - Example: `sage -c "print(2+2)"`
   - Note: interactive `sage` uses `#!/usr/bin/env python3` via `sage-ipython`; this image sets `PATH` so `python3` is Sage’s venv Python.
 - Python 3.13 (uv venv):

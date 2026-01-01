@@ -184,6 +184,8 @@ RUN set -eux; \
 # Source the CTF env in interactive shells by default.
 # Disable by setting `CTF_AUTO_SOURCE=0`.
 RUN set -eux; \
+  # Avoid clobbering PATH in interactive shells (breaks Sage env if present).
+  sed -i '/^export PATH=\\/home\\/sage\\/sage\\/local\\/bin:/d' /home/sage/.bashrc 2>/dev/null || true; \
   grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc 2>/dev/null || cat >> /home/sage/.bashrc <<'EOF'
 
 # --- sage-ctf-docker: source CTF env (python -> py3.13) ---
@@ -244,7 +246,7 @@ RUN set -eux; \
 COPY requirements/sage.txt /tmp/requirements-sage.txt
 RUN set -eux; \
   if [ "${ENABLE_SAGE}" = "1" ] && [ "${SAGE_BUILD_STEP}" = "make" ]; then \
-    SAGE_PY="$(sage -python -c 'import sys; print(sys.executable)')"; \
+    SAGE_PY="$(sage --python -c 'import sys; print(sys.executable)')"; \
     uv pip install --python "${SAGE_PY}" -r /tmp/requirements-sage.txt; \
   fi
 
@@ -253,7 +255,7 @@ RUN set -eux; \
     cd /opt/src/crypto-attacks; \
     # Ensure the project root is the unittest top-level dir, so imports like
     # "from shared import ..." resolve to /opt/src/crypto-attacks/shared.
-    sage -python -m unittest discover -s test -t . -v; \
+    sage --python -m unittest discover -s test -t . -v; \
   fi
 
 COPY verify/smoke.sh /opt/verify/smoke.sh
