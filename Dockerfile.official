@@ -143,9 +143,9 @@ EOF
 # Python 2.7 (fallback) via micromamba
 COPY requirements/py27.txt /tmp/requirements-py27.txt
 RUN set -eux; \
-  micromamba create -y -n py27 -c conda-forge python=2.7 pip; \
+  micromamba create -y -n py27 -c conda-forge python=2.7 pip gmpy2=2.0.8; \
   micromamba run -n py27 python -V; \
-  micromamba run -n py27 python -m pip install -r /tmp/requirements-py27.txt; \
+  micromamba run -n py27 python -m pip install --no-cache-dir --no-build-isolation --progress-bar off -r /tmp/requirements-py27.txt; \
   printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python \"$@\"\n' > /usr/local/bin/py27; \
   printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python \"$@\"\n' > /usr/local/bin/python2; \
   printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python -m pip \"$@\"\n' > /usr/local/bin/pip2; \

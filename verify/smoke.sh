@@ -83,8 +83,12 @@ if [ -x /usr/local/bin/py27 ]; then
   command -v pip2 >/dev/null
   pip2 -V | grep -qF '(python 2.7'
   /usr/local/bin/py27 -c "import requests; print('ok: py27 requests')"
-  /usr/local/bin/py27 -c "import Crypto; print('ok: py27 pycryptodome')"
+  /usr/local/bin/py27 -c "import Crypto; print('ok: py27 Crypto')"
+  /usr/local/bin/py27 -c "import pkg_resources; assert pkg_resources.get_distribution('pycryptodome').version.startswith('3.'); print('ok: py27 pycryptodome')"
+  ! /usr/local/bin/py27 -c "import pkg_resources; pkg_resources.get_distribution('pycrypto')" >/dev/null 2>&1
   /usr/local/bin/py27 -c "import sympy; print('ok: py27 sympy')"
+  /usr/local/bin/py27 -c "import gmpy2; print('ok: py27 gmpy2')"
+  PWNLIB_NOTERM=1 /usr/local/bin/py27 -c "import pwn; print('ok: py27 pwntools')"
 else
   echo "[smoke] py27 wrapper missing" >&2
   exit 1

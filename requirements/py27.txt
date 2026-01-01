@@ -2,7 +2,7 @@
 requests==2.27.1
 pycryptodome==3.9.9
 sympy==1.1.1
-pycrypto==2.6.1
+pyelftools==0.27
+pwntools==3.13.0
 pyasn1==0.4.8
 ecdsa==0.18.0
-
