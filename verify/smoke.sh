@@ -11,6 +11,7 @@ echo "[smoke] python3.13 (uv venv)"
 /opt/venvs/py313/bin/python -c "import cryptography, nacl; print('ok: cryptography/pynacl')"
 /opt/venvs/py313/bin/python -c "import ortools; print('ok: ortools')"
 /opt/venvs/py313/bin/python -c "import zstandard; print('ok: zstandard')"
+/opt/venvs/py313/bin/python -c "import flask, httpx; print('ok: flask/httpx')"
 
 echo "[smoke] ctf shim + bashrc wiring"
 test -x /opt/ctf/env.sh
@@ -30,6 +31,10 @@ fi
 echo "[smoke] system tools"
 command -v java >/dev/null
 java -version >/dev/null 2>&1 || true
+command -v rustc >/dev/null
+command -v cargo >/dev/null
+rustc --version
+cargo --version
 command -v r2 >/dev/null
 r2 -v >/dev/null
 command -v tshark >/dev/null

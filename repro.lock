@@ -3,6 +3,7 @@
 BASE_IMAGE="sagemath/sagemath@sha256:e2e4747b0e1ea8753a9cb5a399314a8b2c25fcefaf69ba85b22ee075829d09ea"
 UV_VERSION="0.9.21"
 MICROMAMBA_VERSION="2.4.0-1"
+RUST_TOOLCHAIN="1.92.0"
 
 SAGE_REPO="https://github.com/sagemath/sage.git"
 SAGE_VERSION="10.8"

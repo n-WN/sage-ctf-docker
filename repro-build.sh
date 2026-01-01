@@ -118,6 +118,16 @@ print(digests[0])
 PY
 }
 
+resolve_rust_stable_toolchain() {
+  python3 - <<'PY'
+import tomllib, urllib.request
+data = urllib.request.urlopen("https://static.rust-lang.org/dist/channel-rust-stable.toml", timeout=60).read()
+doc = tomllib.loads(data.decode("utf-8"))
+ver = doc["pkg"]["rust"]["version"].split(" ", 1)[0]
+print(ver)
+PY
+}
+
 write_lock() {
   local sage_repo="https://github.com/sagemath/sage.git"
   local flatter_repo="https://github.com/keeganryan/flatter.git"
@@ -126,10 +136,11 @@ write_lock() {
   local crypto_attacks_repo="https://github.com/jvdsn/crypto-attacks.git"
   local or_tools_repo="https://github.com/google/or-tools.git"
 
-  local base_image uv_version micromamba_version
+  local base_image uv_version micromamba_version rust_toolchain
   base_image="$(resolve_base_image_digest "${BASE_IMAGE_TAG}")"
   uv_version="$(latest_git_tag "https://github.com/astral-sh/uv.git")"
   micromamba_version="$(latest_git_tag "https://github.com/mamba-org/micromamba-releases.git")"
+  rust_toolchain="$(resolve_rust_stable_toolchain)"
 
   local sage_ref flatter_ref radare2_ref gf2bv_ref crypto_attacks_ref or_tools_ref
   sage_ref="$(tag_sha "$sage_repo" "${SAGE_VERSION}")"
@@ -145,6 +156,7 @@ write_lock() {
 BASE_IMAGE="${base_image}"
 UV_VERSION="${uv_version}"
 MICROMAMBA_VERSION="${micromamba_version}"
+RUST_TOOLCHAIN="${rust_toolchain}"
 
 SAGE_REPO="${sage_repo}"
 SAGE_VERSION="${SAGE_VERSION}"
@@ -179,6 +191,7 @@ BUILD_ARGS=(
   --build-arg "BASE_IMAGE=${BASE_IMAGE}"
   --build-arg "UV_VERSION=${UV_VERSION}"
   --build-arg "MICROMAMBA_VERSION=${MICROMAMBA_VERSION}"
+  --build-arg "RUST_TOOLCHAIN=${RUST_TOOLCHAIN}"
   --build-arg "SAGE_REPO=${SAGE_REPO}"
   --build-arg "SAGE_REF=${SAGE_REF}"
   --build-arg "FLATTER_REPO=${FLATTER_REPO}"

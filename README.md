@@ -8,6 +8,7 @@ This repository builds a reproducible Docker image for CTF crypto/reversing that
 - Python 3.13 (primary): `uv` managed interpreter + venv at `/opt/venvs/py313`.
 - Python 2.7 (fallback): isolated `micromamba` env, wrapper `/usr/local/bin/py27`.
 - Sage 10.8: system `sage` CLI from the base image.
+- Rust toolchain: `rustup` (official installer), pinned toolchain via `repro.lock`.
 - Tools: `flatter` (LLL accelerator), `r2` (radare2, built from source), `tshark`, headless Java runtime.
 - Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `or-tools` (cloned at pinned SHAs).
 
@@ -43,6 +44,8 @@ The image ships `/opt/verify/smoke.sh` which checks:
 | `r2` | `/usr/local/bin/r2` | radare2 |
 | `tshark` | `/usr/bin/tshark` | 抓包/PCAP 工具 |
 | `java` | `/usr/bin/java` | Java runtime（headless） |
+| `rustc` | `/home/sage/.cargo/bin/rustc` | Rust 编译器（rustup，toolchain 见 `repro.lock`） |
+| `cargo` | `/home/sage/.cargo/bin/cargo` | Rust 包管理器 |
 
 ### 默认 shell 行为（避免踩坑）
 

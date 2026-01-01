@@ -5,6 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ARG UV_VERSION="0.9.21"
 ARG MICROMAMBA_VERSION="2.4.0-1"
+ARG RUST_TOOLCHAIN="stable"
 
 ARG FLATTER_REPO="https://github.com/keeganryan/flatter.git"
 ARG FLATTER_REF=""
@@ -21,7 +22,10 @@ ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     UV_HTTP_TIMEOUT=300 \
     HOME=/home/sage \
-    MAMBA_ROOT_PREFIX=/opt/micromamba
+    MAMBA_ROOT_PREFIX=/opt/micromamba \
+    CARGO_HOME=/home/sage/.cargo \
+    RUSTUP_HOME=/home/sage/.rustup \
+    PATH=/home/sage/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 SHELL ["/bin/bash", "-lc"]
 
@@ -41,13 +45,32 @@ RUN set -eux; \
     libgmp-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
     libm4ri-dev \
     tshark \
-  ; \
-  rm -rf /var/lib/apt/lists/*
+  ;
+
+# Keep apt lists in the image so users can install extra packages without
+# needing to `apt-get update` first (faster interactive usage).
+RUN set -eux; \
+  apt-get update
 
 # Create a stable symlink to Sage's Python venv (path includes the Python patch version).
 RUN set -eux; \
   venv_root="$(/usr/bin/sage --python -c 'import sys, pathlib; print(pathlib.Path(sys.executable).resolve().parent.parent)')"; \
   ln -sfn "${venv_root}" /home/sage/sage/local/var/lib/sage/venv
+
+# Rust toolchain via rustup (official recommended installer).
+RUN set -eux; \
+  mkdir -p "${CARGO_HOME}" "${RUSTUP_HOME}"; \
+  chown -R sage:sage "${CARGO_HOME}" "${RUSTUP_HOME}"
+
+USER sage
+RUN set -eux; \
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --profile minimal --no-modify-path --default-toolchain "${RUST_TOOLCHAIN}"; \
+  rustup component add rustfmt clippy; \
+  rustc --version; \
+  cargo --version
+
+USER root
 
 # radare2 (r2) is not shipped in Ubuntu 22.04 apt repos; build from source for reproducibility.
 RUN set -eux; \
