@@ -23,10 +23,6 @@ ENV LANG=C.UTF-8 \
     HOME=/home/sage \
     MAMBA_ROOT_PREFIX=/opt/micromamba
 
-# Make Sage's venv `python3` the default so `sage` can launch `sage-ipython`
-# (which uses `#!/usr/bin/env python3`) in interactive shells.
-ENV PATH=/home/sage/sage/local/var/lib/sage/venv/bin:/home/sage/sage/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
 SHELL ["/bin/bash", "-lc"]
 
 USER root
@@ -211,13 +207,13 @@ RUN set -eux; \
 
 COPY requirements/sage.txt /tmp/requirements-sage.txt
 RUN set -eux; \
-  SAGE_PY="$(sage --python -c 'import sys; print(sys.executable)')"; \
+  SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
   uv pip install --python "${SAGE_PY}" -r /tmp/requirements-sage.txt; \
   :
 
 RUN set -eux; \
   cd /opt/src/crypto-attacks; \
-  sage --python -m unittest discover -s test -t . -v
+  /usr/bin/sage --python -m unittest discover -s test -t . -v
 
 USER root
 COPY verify/smoke.sh /opt/verify/smoke.sh
