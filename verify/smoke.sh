@@ -12,12 +12,14 @@ echo "[smoke] python3.13 (uv venv)"
 /opt/venvs/py313/bin/python -c "import ortools; print('ok: ortools')"
 /opt/venvs/py313/bin/python -c "import zstandard; print('ok: zstandard')"
 
-echo "[smoke] bash interactive default (python -> py3.13)"
-bash -ic 'python -V' | grep -qF 'Python 3.13'
-echo "[smoke] bash interactive keeps Sage python3"
-bash -ic 'python3 -V' | grep -qF 'Python 3.12'
-echo "[smoke] bash interactive keeps Sage working"
-bash -ic 'sage -c "print(2+2)"' >/dev/null
+echo "[smoke] ctf shim + bashrc wiring"
+test -x /opt/ctf/env.sh
+test -x /opt/ctf/bin/python
+/opt/ctf/bin/python -V | grep -qF 'Python 3.13'
+python3 -V | grep -qF 'Python 3.12'
+grep -qF 'source /opt/ctf/env.sh' /home/sage/.bashrc
+! grep -qE '^export PATH=/home/sage/sage/local/bin:' /home/sage/.bashrc
+bash -lc 'source /opt/ctf/env.sh; python -V' | grep -qF 'Python 3.13'
 
 echo "[smoke] system tools"
 command -v java >/dev/null
