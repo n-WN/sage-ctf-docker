@@ -12,6 +12,9 @@ echo "[smoke] python3.13 (uv venv)"
 /opt/venvs/py313/bin/python -c "import ortools; print('ok: ortools')"
 /opt/venvs/py313/bin/python -c "import zstandard; print('ok: zstandard')"
 
+echo "[smoke] bash interactive default (python -> py3.13)"
+bash -ic 'python -V' | grep -qF 'Python 3.13'
+
 echo "[smoke] system tools"
 command -v java >/dev/null
 java -version >/dev/null 2>&1 || true

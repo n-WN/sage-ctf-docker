@@ -31,7 +31,10 @@ The image ships `/opt/verify/smoke.sh` which checks:
 - Python 3.13 (uv venv):
   - Venv: `/opt/venvs/py313`
   - Python: `/opt/venvs/py313/bin/python`
-  - Activate: `source /opt/venvs/py313/bin/activate`
+  - Activate (full venv): `source /opt/venvs/py313/bin/activate` (overrides `python3`; not recommended if you want to run interactive `sage` in the same shell)
+- CTF shell default:
+  - `bash` interactive auto-sources `/opt/ctf/env.sh` (sets `python`/`pip` to Python 3.13 without overriding `python3`).
+  - Disable: `export CTF_AUTO_SOURCE=0`
 - Python 2.7 (micromamba fallback):
   - Wrapper: `/usr/local/bin/py27`
   - Example: `py27 -c "import sys; print(sys.version)"`

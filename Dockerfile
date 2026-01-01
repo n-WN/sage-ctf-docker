@@ -93,6 +93,19 @@ RUN set -eux; \
   uv pip install --python /opt/venvs/py313/bin/python -r /tmp/requirements-py313.txt; \
   /opt/venvs/py313/bin/python -V
 
+# Provide a stable "CTF Python" shim that does NOT override `python3` (to avoid
+# interfering with other tooling that expects the system `python3`).
+RUN set -eux; \
+  mkdir -p /opt/ctf/bin; \
+  ln -sfn /opt/venvs/py313/bin/python /opt/ctf/bin/python; \
+  ln -sfn /opt/venvs/py313/bin/pip /opt/ctf/bin/pip; \
+  cat > /opt/ctf/env.sh <<'EOF'; \
+#!/usr/bin/env bash\n\
+export CTF_PY313=/opt/venvs/py313/bin/python\n\
+export PATH=/opt/ctf/bin:\"$PATH\"\n\
+EOF \
+  ; chmod 0755 /opt/ctf/env.sh
+
 COPY requirements/py27.txt /tmp/requirements-py27.txt
 RUN set -eux; \
   micromamba create -y -n py27 -c conda-forge python=2.7 pip; \
@@ -162,6 +175,15 @@ RUN set -eux; \
   useradd -m -u 1000 -g 1000 -s /bin/bash sage; \
   mkdir -p /opt/sage-src; \
   chown -R sage:sage /opt/src /opt/sage-src /opt/verify
+
+# Source the CTF env in interactive shells by default.
+# Disable by setting `CTF_AUTO_SOURCE=0`.
+RUN set -eux; \
+  if ! grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc 2>/dev/null; then \
+    cat >> /home/sage/.bashrc <<'EOF'; \
+\n# --- sage-ctf-docker: source CTF env (python -> py3.13) ---\ncase \"$-\" in\n  *i*)\n    if [ \"${CTF_AUTO_SOURCE:-1}\" != \"0\" ] && [ -f /opt/ctf/env.sh ]; then\n      source /opt/ctf/env.sh\n    fi\n    ;;\nesac\n# ---------------------------------------------------------\nEOF \
+  ; fi; \
+  chown sage:sage /home/sage/.bashrc
 
 USER sage
 WORKDIR /opt
