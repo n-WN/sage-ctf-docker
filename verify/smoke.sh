@@ -42,6 +42,8 @@ command -v npm >/dev/null
 npm --version
 command -v bun >/dev/null
 bun --version
+command -v pdftotext >/dev/null
+pdftotext -v >/dev/null 2>&1 || true
 command -v rustc >/dev/null
 command -v cargo >/dev/null
 rustc --version

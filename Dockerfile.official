@@ -53,6 +53,7 @@ RUN set -eux; \
     libm4ri-dev \
     tshark \
     netcat-openbsd \
+    poppler-utils \
   ;
 
 # Keep apt lists in the image so users can install extra packages without
