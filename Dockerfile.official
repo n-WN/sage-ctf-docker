@@ -45,6 +45,7 @@ RUN set -eux; \
     libgmp-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
     libm4ri-dev \
     tshark \
+    netcat-openbsd \
   ;
 
 # Keep apt lists in the image so users can install extra packages without

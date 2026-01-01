@@ -35,6 +35,7 @@ fi
 echo "[smoke] system tools"
 command -v java >/dev/null
 java -version >/dev/null 2>&1 || true
+command -v nc >/dev/null
 command -v rustc >/dev/null
 command -v cargo >/dev/null
 rustc --version
