@@ -1,64 +1,10 @@
-diff --git a/attacks/gcm/forbidden_attack.py b/attacks/gcm/forbidden_attack.py
-index ed9c00f..e3520f1 100644
---- a/attacks/gcm/forbidden_attack.py
-+++ b/attacks/gcm/forbidden_attack.py
-@@ -11,7 +11,16 @@ def _to_gf2e(n):
- # Converts a gf2e element to an integer, little endian.
- def _from_gf2e(p):
--    n = p.integer_representation()
-+    # Sage element API differs between versions/backends.
-+    # SageMath 10.8 GF(2^k) NTL elements expose `to_integer()` (and a private
-+    # `_integer_representation()`), while some other backends expose
-+    # `integer_representation()`.
-+    if hasattr(p, "integer_representation"):
-+        n = p.integer_representation()
-+    elif hasattr(p, "to_integer"):
-+        n = p.to_integer()
-+    else:
-+        n = p._integer_representation()
-     ans = 0
-     for i in range(128):
-         ans <<= 1
-diff --git a/attacks/ige/padding_oracle.py b/attacks/ige/padding_oracle.py
-index 37c304e..9ab91bd 100644
---- a/attacks/ige/padding_oracle.py
-+++ b/attacks/ige/padding_oracle.py
-@@ -6,16 +6,27 @@ def _attack_block(padding_oracle, p0, c0, c):
-     logging.info(f"Attacking block {c.hex()}...")
--    r = bytes()
--    for i in reversed(range(16)):
-+
-+    # The padding oracle can produce multiple candidates for a given byte (most
-+    # notably when the guessed plaintext ends in a valid `0x01` padding by
-+    # chance). Use backtracking to avoid false positives that lead to dead ends.
-+    def _search(i, r):
-+        if i < 0:
-+            return r
-+
-         s = bytes([16 - i] * (16 - i))
-         for b in range(256):
-             c0_ = bytes(i) + strxor(s, bytes([b]) + r)
-             if padding_oracle(p0, c0_, c):
--                r = bytes([b]) + r
--                break
--        else:
--            raise ValueError(f"Unable to find decryption for {s}, {p0}, {c0}, and {c}")
-+                rr = _search(i - 1, bytes([b]) + r)
-+                if rr is not None:
-+                    return rr
-+
-+        return None
-+
-+    r = _search(15, b"")
-+    if r is None:
-+        raise ValueError(f"Unable to find decryption for {p0}, {c0}, and {c}")
- 
-     return strxor(c0, r)
 diff --git a/attacks/cbc/padding_oracle.py b/attacks/cbc/padding_oracle.py
-index 5cc3300..2c1ebd3 100644
+index d76bc95..00c28c0 100644
 --- a/attacks/cbc/padding_oracle.py
 +++ b/attacks/cbc/padding_oracle.py
-@@ -6,16 +6,27 @@ def _attack_block(padding_oracle, iv, c):
+@@ -5,16 +5,27 @@ from Crypto.Util.strxor import strxor
+ 
+ def _attack_block(padding_oracle, iv, c):
      logging.info(f"Attacking block {c.hex()}...")
 -    r = bytes()
 -    for i in reversed(range(16)):
@@ -89,3 +35,64 @@ index 5cc3300..2c1ebd3 100644
 +        raise ValueError(f"Unable to find decryption for {iv}, and {c}")
  
      return strxor(iv, r)
+ 
+diff --git a/attacks/gcm/forbidden_attack.py b/attacks/gcm/forbidden_attack.py
+index ed9c00f..e3520f1 100644
+--- a/attacks/gcm/forbidden_attack.py
++++ b/attacks/gcm/forbidden_attack.py
+@@ -11,7 +11,16 @@ def _to_gf2e(n):
+ 
+ # Converts a gf2e element to an integer, little endian.
+ def _from_gf2e(p):
+-    n = p.integer_representation()
++    # Sage element API differs between versions/backends.
++    # SageMath 10.8 GF(2^k) NTL elements expose `to_integer()` (and a private
++    # `_integer_representation()`), while some other backends expose
++    # `integer_representation()`.
++    if hasattr(p, "integer_representation"):
++        n = p.integer_representation()
++    elif hasattr(p, "to_integer"):
++        n = p.to_integer()
++    else:
++        n = p._integer_representation()
+     ans = 0
+     for i in range(128):
+         ans <<= 1
+diff --git a/attacks/ige/padding_oracle.py b/attacks/ige/padding_oracle.py
+index 37c304e..9ab91bd 100644
+--- a/attacks/ige/padding_oracle.py
++++ b/attacks/ige/padding_oracle.py
+@@ -5,16 +5,27 @@ from Crypto.Util.strxor import strxor
+ 
+ def _attack_block(padding_oracle, p0, c0, c):
+     logging.info(f"Attacking block {c.hex()}...")
+-    r = bytes()
+-    for i in reversed(range(16)):
++
++    # The padding oracle can produce multiple candidates for a given byte (most
++    # notably when the guessed plaintext ends in a valid `0x01` padding by
++    # chance). Use backtracking to avoid false positives that lead to dead ends.
++    def _search(i, r):
++        if i < 0:
++            return r
++
+         s = bytes([16 - i] * (16 - i))
+         for b in range(256):
+             c0_ = bytes(i) + strxor(s, bytes([b]) + r)
+             if padding_oracle(p0, c0_, c):
+-                r = bytes([b]) + r
+-                break
+-        else:
+-            raise ValueError(f"Unable to find decryption for {s}, {p0}, {c0}, and {c}")
++                rr = _search(i - 1, bytes([b]) + r)
++                if rr is not None:
++                    return rr
++
++        return None
++
++    r = _search(15, b"")
++    if r is None:
++        raise ValueError(f"Unable to find decryption for {p0}, {c0}, and {c}")
+ 
+     return strxor(c0, r)
+ 
