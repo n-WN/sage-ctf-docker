@@ -133,7 +133,10 @@ RUN set -eux; \
   micromamba run -n py27 python -V; \
   micromamba run -n py27 python -m pip install -r /tmp/requirements-py27.txt; \
   printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python \"$@\"\n' > /usr/local/bin/py27; \
+  printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python \"$@\"\n' > /usr/local/bin/python2; \
+  printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python -m pip \"$@\"\n' > /usr/local/bin/pip2; \
   chmod +x /usr/local/bin/py27; \
+  chmod +x /usr/local/bin/python2 /usr/local/bin/pip2; \
   micromamba clean -a -y
 
 RUN set -eux; \

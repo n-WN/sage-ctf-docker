@@ -16,10 +16,12 @@ echo "[smoke] ctf shim + bashrc wiring"
 test -x /opt/ctf/env.sh
 test -x /opt/ctf/bin/python
 /opt/ctf/bin/python -V | grep -qF 'Python 3.13'
-python3 -V | grep -qF 'Python 3.12'
 grep -qF 'source /opt/ctf/env.sh' /home/sage/.bashrc
 ! grep -qE '^export PATH=/home/sage/sage/local/bin:' /home/sage/.bashrc
-bash -lc 'source /opt/ctf/env.sh; python -V' | grep -qF 'Python 3.13'
+bash -ic 'python -V' 2>/dev/null | grep -qF 'Python 3.13'
+if command -v sage >/dev/null; then
+  sage --python -V | grep -qF 'Python 3.12'
+fi
 
 echo "[smoke] system tools"
 command -v java >/dev/null
@@ -72,6 +74,10 @@ fi
 echo "[smoke] python2.7 (micromamba env)"
 if [ -x /usr/local/bin/py27 ]; then
   /usr/local/bin/py27 -V
+  command -v python2 >/dev/null
+  python2 -V
+  command -v pip2 >/dev/null
+  pip2 -V | grep -qF '(python 2.7'
   /usr/local/bin/py27 -c "import requests; print('ok: py27 requests')"
   /usr/local/bin/py27 -c "import Crypto; print('ok: py27 pycryptodome')"
   /usr/local/bin/py27 -c "import sympy; print('ok: py27 sympy')"

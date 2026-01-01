@@ -23,33 +23,44 @@ The image ships `/opt/verify/smoke.sh` which checks:
 
 ## Paths & usage cheatsheet
 
-- SageMath:
-  - Binary: `/usr/bin/sage` (symlink to `/home/sage/sage/sage`)
-  - Sage Python: `sage --python` (runs the Sage venv interpreter)
-  - Example: `sage -c "print(2+2)"`
-  - Note: interactive `sage` uses `#!/usr/bin/env python3` via `sage-ipython`; this image sets `PATH` so `python3` is Sage’s venv Python.
-- Python 3.13 (uv venv):
-  - Venv: `/opt/venvs/py313`
-  - Python: `/opt/venvs/py313/bin/python`
-  - Activate (full venv): `source /opt/venvs/py313/bin/activate` (overrides `python3`; not recommended if you want to run interactive `sage` in the same shell)
-- CTF shell default:
-  - `bash` interactive auto-sources `/opt/ctf/env.sh` (sets `python`/`pip` to Python 3.13 without overriding `python3`).
-  - Disable: `export CTF_AUTO_SOURCE=0`
-- Python 2.7 (micromamba fallback):
-  - Wrapper: `/usr/local/bin/py27`
-  - Example: `py27 -c "import sys; print(sys.version)"`
-- Installed tools:
-  - `flatter`: `/usr/local/bin/flatter`
-  - `r2` (radare2): `/usr/local/bin/r2`
-  - `tshark`: `/usr/bin/tshark`
-  - `java`: `/usr/bin/java`
-- Sources cloned during build (pinned by `repro.lock`):
-  - `/opt/src/crypto-attacks`
-  - `/opt/src/gf2bv`
-  - `/opt/src/flatter`
-  - `/opt/src/or-tools`
-  - `/opt/src/radare2`
-- Verification script: `/opt/verify/smoke.sh`
+容器内我们刻意做了“命令别名/入口”分流：**不覆盖 `python3`**（避免破坏 Sage 的交互启动），但默认让 `python/pip` 指向 CTF 主 Python 3.13。
+
+| 命令 | 真实入口/路径 | 指向/说明 |
+|---|---|---|
+| `sage` | `/usr/bin/sage` | SageMath 10.8（基于官方镜像） |
+| `sage --python` | (内部解析) | Sage 自带 venv 的 Python（当前为 3.12.x） |
+| `sage --pip` | (内部解析) | Sage 自带 venv 的 pip |
+| `python3` | `/home/sage/sage/local/bin/python3` | **Sage Python**（为保证 `sage` 交互正常） |
+| `pip3` | `/home/sage/sage/local/bin/pip3` | **Sage pip** |
+| `python` | `/opt/ctf/bin/python` → `/opt/venvs/py313/bin/python` | CTF 主 Python 3.13（uv venv） |
+| `pip` | `/opt/ctf/bin/pip` → `/opt/venvs/py313/bin/pip` | CTF 主 pip（py313） |
+| `python2` | `/usr/local/bin/python2` | micromamba `py27` 环境的 Python 2.7 |
+| `pip2` | `/usr/local/bin/pip2` | micromamba `py27` 环境的 pip |
+| `py27` | `/usr/local/bin/py27` | Python 2.7 备用入口（等价 `python2`） |
+| `uv` | `/usr/local/bin/uv` | Python 3.13 的包/解释器管理器 |
+| `micromamba` | `/usr/local/bin/micromamba` | Python 2.7 备用环境管理 |
+| `flatter` | `/usr/local/bin/flatter` | LLL 加速 |
+| `r2` | `/usr/local/bin/r2` | radare2 |
+| `tshark` | `/usr/bin/tshark` | 抓包/PCAP 工具 |
+| `java` | `/usr/bin/java` | Java runtime（headless） |
+
+### 默认 shell 行为（避免踩坑）
+
+- `docker run --rm -it ... bash`：交互式 `bash` 默认会 `source /opt/ctf/env.sh`，把 `python/pip` 指向 Python 3.13，但**不改变** `python3/pip3`。
+- 关闭自动 source：`export CTF_AUTO_SOURCE=0`
+- 不推荐 `source /opt/venvs/py313/bin/activate`：它会覆盖 `python3`，可能导致交互式 `sage` 启动跑到 3.13 而异常。
+
+### 源码位置（构建时拉取，SHA 在 `repro.lock`）
+
+- `/opt/src/crypto-attacks`
+- `/opt/src/gf2bv`
+- `/opt/src/flatter`
+- `/opt/src/or-tools`
+- `/opt/src/radare2`
+
+### 验证脚本
+
+- `/opt/verify/smoke.sh`
 
 ## Notes / intentional exclusions
 
