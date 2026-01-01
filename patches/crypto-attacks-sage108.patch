@@ -30,14 +30,14 @@ index 37c304e..9ab91bd 100644
      logging.info(f"Attacking block {c.hex()}...")
 -    r = bytes()
 -    for i in reversed(range(16)):
-+
++ 
 +    # The padding oracle can produce multiple candidates for a given byte (most
 +    # notably when the guessed plaintext ends in a valid `0x01` padding by
 +    # chance). Use backtracking to avoid false positives that lead to dead ends.
 +    def _search(i, r):
 +        if i < 0:
 +            return r
-+
++ 
          s = bytes([16 - i] * (16 - i))
          for b in range(256):
              c0_ = bytes(i) + strxor(s, bytes([b]) + r)
@@ -49,15 +49,14 @@ index 37c304e..9ab91bd 100644
 +                rr = _search(i - 1, bytes([b]) + r)
 +                if rr is not None:
 +                    return rr
-+
++ 
 +        return None
-+
++ 
 +    r = _search(15, b"")
 +    if r is None:
 +        raise ValueError(f"Unable to find decryption for {p0}, {c0}, and {c}")
  
-    return strxor(c0, r)
-
+     return strxor(c0, r)
 diff --git a/attacks/cbc/padding_oracle.py b/attacks/cbc/padding_oracle.py
 index 5cc3300..2c1ebd3 100644
 --- a/attacks/cbc/padding_oracle.py
@@ -68,14 +67,14 @@ index 5cc3300..2c1ebd3 100644
      logging.info(f"Attacking block {c.hex()}...")
 -    r = bytes()
 -    for i in reversed(range(16)):
-+
++ 
 +    # The padding oracle can produce multiple candidates for a given byte (most
 +    # notably when the guessed plaintext ends in a valid `0x01` padding by
 +    # chance). Use backtracking to avoid false positives that lead to dead ends.
 +    def _search(i, r):
 +        if i < 0:
 +            return r
-+
++ 
          s = bytes([16 - i] * (16 - i))
          for b in range(256):
              iv_ = bytes(i) + strxor(s, bytes([b]) + r)
@@ -87,9 +86,9 @@ index 5cc3300..2c1ebd3 100644
 +                rr = _search(i - 1, bytes([b]) + r)
 +                if rr is not None:
 +                    return rr
-+
++ 
 +        return None
-+
++ 
 +    r = _search(15, b"")
 +    if r is None:
 +        raise ValueError(f"Unable to find decryption for {iv}, and {c}")
