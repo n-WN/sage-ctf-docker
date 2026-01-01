@@ -99,12 +99,12 @@ RUN set -eux; \
   mkdir -p /opt/ctf/bin; \
   ln -sfn /opt/venvs/py313/bin/python /opt/ctf/bin/python; \
   ln -sfn /opt/venvs/py313/bin/pip /opt/ctf/bin/pip; \
-  cat > /opt/ctf/env.sh <<'EOF'; \
-#!/usr/bin/env bash\n\
-export CTF_PY313=/opt/venvs/py313/bin/python\n\
-export PATH=/opt/ctf/bin:\"$PATH\"\n\
-EOF \
-  ; chmod 0755 /opt/ctf/env.sh
+  cat > /opt/ctf/env.sh <<'EOF'
+#!/usr/bin/env bash
+export CTF_PY313=/opt/venvs/py313/bin/python
+export PATH=/opt/ctf/bin:"$PATH"
+EOF
+  chmod 0755 /opt/ctf/env.sh
 
 COPY requirements/py27.txt /tmp/requirements-py27.txt
 RUN set -eux; \
@@ -180,9 +180,19 @@ RUN set -eux; \
 # Disable by setting `CTF_AUTO_SOURCE=0`.
 RUN set -eux; \
   if ! grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc 2>/dev/null; then \
-    cat >> /home/sage/.bashrc <<'EOF'; \
-\n# --- sage-ctf-docker: source CTF env (python -> py3.13) ---\ncase \"$-\" in\n  *i*)\n    if [ \"${CTF_AUTO_SOURCE:-1}\" != \"0\" ] && [ -f /opt/ctf/env.sh ]; then\n      source /opt/ctf/env.sh\n    fi\n    ;;\nesac\n# ---------------------------------------------------------\nEOF \
-  ; fi; \
+    cat >> /home/sage/.bashrc <<'EOF'
+
+# --- sage-ctf-docker: source CTF env (python -> py3.13) ---
+case "$-" in
+  *i*)
+    if [ "${CTF_AUTO_SOURCE:-1}" != "0" ] && [ -f /opt/ctf/env.sh ]; then
+      source /opt/ctf/env.sh
+    fi
+    ;;
+esac
+# ---------------------------------------------------------
+EOF
+  fi; \
   chown sage:sage /home/sage/.bashrc
 
 USER sage
