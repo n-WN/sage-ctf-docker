@@ -1,0 +1,182 @@
+ARG BASE_IMAGE=sagemath/sagemath:10.8
+FROM ${BASE_IMAGE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+ARG UV_VERSION="0.9.21"
+ARG MICROMAMBA_VERSION="2.4.0-1"
+
+ARG FLATTER_REPO="https://github.com/keeganryan/flatter.git"
+ARG FLATTER_REF=""
+ARG RADARE2_REPO="https://github.com/radareorg/radare2.git"
+ARG RADARE2_REF=""
+ARG GF2BV_REPO="https://github.com/maple3142/gf2bv.git"
+ARG GF2BV_REF=""
+ARG CRYPTO_ATTACKS_REPO="https://github.com/jvdsn/crypto-attacks.git"
+ARG CRYPTO_ATTACKS_REF=""
+ARG OR_TOOLS_REPO="https://github.com/google/or-tools.git"
+ARG OR_TOOLS_REF=""
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    UV_HTTP_TIMEOUT=300 \
+    MAMBA_ROOT_PREFIX=/opt/micromamba
+
+SHELL ["/bin/bash", "-lc"]
+
+USER root
+RUN set -eux; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends debconf-utils; \
+  echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections; \
+  apt-get install -y --no-install-recommends \
+    ca-certificates curl wget git bash coreutils findutils xz-utils bzip2 unzip zip \
+    python3 python3-venv python3-dev python3-setuptools \
+    openjdk-17-jre-headless \
+    make gcc g++ gfortran pkg-config \
+    libssl-dev libffi-dev libbz2-dev liblzma-dev zlib1g-dev \
+    libreadline-dev libsqlite3-dev libncurses-dev libgdbm-dev libnsl-dev \
+    cmake ninja-build \
+    libgmp-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
+    libm4ri-dev \
+    tshark \
+  ; \
+  rm -rf /var/lib/apt/lists/*
+
+# radare2 (r2) is not shipped in Ubuntu 22.04 apt repos; build from source for reproducibility.
+RUN set -eux; \
+  rm -rf /opt/src/radare2; \
+  git clone --no-tags --filter=blob:none "${RADARE2_REPO}" /opt/src/radare2; \
+  cd /opt/src/radare2; \
+  if [ -n "${RADARE2_REF}" ]; then git -c advice.detachedHead=false checkout "${RADARE2_REF}"; fi; \
+  sys/install.sh --prefix=/usr/local; \
+  r2 -v >/dev/null
+
+RUN set -eux; \
+  arch="$(uname -m)"; \
+  case "$arch" in \
+    x86_64) uv_arch="x86_64-unknown-linux-gnu" ;; \
+    aarch64|arm64) uv_arch="aarch64-unknown-linux-gnu" ;; \
+    *) echo "unsupported arch for uv: $arch" >&2; exit 1 ;; \
+  esac; \
+  curl -LsS "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${uv_arch}.tar.gz" | tar -xz -C /usr/local/bin --strip-components=1; \
+  uv --version
+
+RUN set -eux; \
+  arch="$(uname -m)"; \
+  case "$arch" in \
+    x86_64) mamba_arch="linux-64" ;; \
+    aarch64|arm64) mamba_arch="linux-aarch64" ;; \
+    *) echo "unsupported arch for micromamba: $arch" >&2; exit 1 ;; \
+  esac; \
+  curl -LsS "https://github.com/mamba-org/micromamba-releases/releases/download/${MICROMAMBA_VERSION}/micromamba-${mamba_arch}.tar.bz2" | tar -xvj -C /usr/local/bin --strip-components=1 bin/micromamba; \
+  micromamba --version
+
+# Python 3.13 (primary) via uv-managed interpreter + venv
+COPY requirements/py313.txt /tmp/requirements-py313.txt
+RUN set -eux; \
+  uv python install 3.13; \
+  uv venv /opt/venvs/py313 --python 3.13; \
+  uv pip install --python /opt/venvs/py313/bin/python -r /tmp/requirements-py313.txt; \
+  /opt/venvs/py313/bin/python -V
+
+RUN set -eux; \
+  chown -R sage:sage /opt/venvs/py313
+
+# Python 2.7 (fallback) via micromamba
+COPY requirements/py27.txt /tmp/requirements-py27.txt
+RUN set -eux; \
+  micromamba create -y -n py27 -c conda-forge python=2.7 pip; \
+  micromamba run -n py27 python -V; \
+  micromamba run -n py27 python -m pip install -r /tmp/requirements-py27.txt; \
+  printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python \"$@\"\n' > /usr/local/bin/py27; \
+  chmod +x /usr/local/bin/py27; \
+  micromamba clean -a -y
+
+RUN set -eux; \
+  mkdir -p /home/sage/.cache/uv; \
+  chown -R sage:sage /home/sage/.cache
+
+RUN set -eux; \
+  mkdir -p /opt/src /opt/verify /opt/patches; \
+  chown -R sage:sage /opt/src /opt/verify /opt/patches
+
+USER sage
+WORKDIR /opt
+
+RUN set -eux; \
+  if [ -n "${FLATTER_REF}" ]; then \
+    git init /opt/src/flatter; \
+    git -C /opt/src/flatter remote add origin "${FLATTER_REPO}"; \
+    git -C /opt/src/flatter fetch --depth 1 origin "${FLATTER_REF}"; \
+    git -C /opt/src/flatter checkout --detach FETCH_HEAD; \
+  else \
+    git clone --depth 1 "${FLATTER_REPO}" /opt/src/flatter; \
+  fi
+
+USER root
+RUN set -eux; \
+  cmake -S /opt/src/flatter -B /opt/src/flatter/build -DCMAKE_BUILD_TYPE=Release; \
+  cmake --build /opt/src/flatter/build -- -j"$(nproc)"; \
+  cmake --install /opt/src/flatter/build; \
+  ldconfig; \
+  flatter -h >/dev/null
+
+USER sage
+RUN set -eux; \
+  if [ -n "${GF2BV_REF}" ]; then \
+    git init /opt/src/gf2bv; \
+    git -C /opt/src/gf2bv remote add origin "${GF2BV_REPO}"; \
+    git -C /opt/src/gf2bv fetch --depth 1 origin "${GF2BV_REF}"; \
+    git -C /opt/src/gf2bv checkout --detach FETCH_HEAD; \
+  else \
+    git clone --depth 1 "${GF2BV_REPO}" /opt/src/gf2bv; \
+  fi
+
+RUN set -eux; \
+  uv pip install --python /opt/venvs/py313/bin/python /opt/src/gf2bv; \
+  /opt/venvs/py313/bin/python -c "from gf2bv import LinearSystem; lin=LinearSystem([1,1,1,1]); a,b,c,d=lin.gens(); assert lin.solve_one([a^b^c^1,b^d,a^c^1]) is not None"
+
+RUN set -eux; \
+  if [ -n "${CRYPTO_ATTACKS_REF}" ]; then \
+    git init /opt/src/crypto-attacks; \
+    git -C /opt/src/crypto-attacks remote add origin "${CRYPTO_ATTACKS_REPO}"; \
+    git -C /opt/src/crypto-attacks fetch --depth 1 origin "${CRYPTO_ATTACKS_REF}"; \
+    git -C /opt/src/crypto-attacks checkout --detach FETCH_HEAD; \
+  else \
+    git clone --depth 1 "${CRYPTO_ATTACKS_REPO}" /opt/src/crypto-attacks; \
+  fi
+
+COPY patches/crypto-attacks-sage108.patch /opt/patches/crypto-attacks-sage108.patch
+RUN set -eux; \
+  cd /opt/src/crypto-attacks; \
+  git apply /opt/patches/crypto-attacks-sage108.patch
+
+RUN set -eux; \
+  if [ -n "${OR_TOOLS_REF}" ]; then \
+    git init /opt/src/or-tools; \
+    git -C /opt/src/or-tools remote add origin "${OR_TOOLS_REPO}"; \
+    git -C /opt/src/or-tools fetch --depth 1 origin "${OR_TOOLS_REF}"; \
+    git -C /opt/src/or-tools checkout --detach FETCH_HEAD; \
+  else \
+    git clone --depth 1 "${OR_TOOLS_REPO}" /opt/src/or-tools; \
+  fi
+
+COPY requirements/sage.txt /tmp/requirements-sage.txt
+RUN set -eux; \
+  SAGE_PY="$(sage -python -c 'import sys; print(sys.executable)')"; \
+  uv pip install --python "${SAGE_PY}" -r /tmp/requirements-sage.txt; \
+  :
+
+RUN set -eux; \
+  cd /opt/src/crypto-attacks; \
+  sage -python -m unittest discover -s test -t . -v
+
+USER root
+COPY verify/smoke.sh /opt/verify/smoke.sh
+RUN set -eux; \
+  chmod 0755 /opt/verify/smoke.sh; \
+  chown sage:sage /opt/verify/smoke.sh
+
+USER sage
+WORKDIR /opt

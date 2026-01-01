@@ -1,0 +1,8 @@
+# Python 2.7 fallback (micromamba env) - pinned for Py2 compatibility
+requests==2.27.1
+pycryptodome==3.9.9
+sympy==1.1.1
+pycrypto==2.6.1
+pyasn1==0.4.8
+ecdsa==0.18.0
+
