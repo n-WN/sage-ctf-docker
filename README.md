@@ -1,56 +1,64 @@
-# Sage 10.8 + CTF Crypto Toolchain
+# sage-ctf-docker (SageMath 10.8 CTF toolchain)
 
-This folder builds a reproducible Docker image that:
+This repository builds a reproducible Docker image for CTF crypto/reversing that is verified to work with SageMath 10.8.
 
-- Provides SageMath 10.8 (either via source build on Debian 13, or via the official Sage image).
-- Builds and installs `flatter` (`https://github.com/keeganryan/flatter.git`) system-wide.
-- Installs `gf2bv` (`https://github.com/maple3142/gf2bv.git`) into Python 3.13 (`uv` venv). (Not installed into Sage's Python to avoid native-extension segfault risk.)
-- Clones `crypto-attacks` (`https://github.com/jvdsn/crypto-attacks.git`) and runs its unit tests using Sage.
-- Provisions an isolated Python 2.7 fallback via `micromamba` (kept separate from `uv`).
-- Installs common CTF crypto Python libraries into Sage + Python 3.13 (+ a legacy-compatible subset for Python 2.7).
-- Clones `https://github.com/google/or-tools.git` for source availability and installs `ortools` into Python 3.13 (and attempts Sage).
-- Installs common system tools for CTF reversing/networking: `r2` (radare2), `tshark`, and a headless Java runtime.
+## What’s inside
+
+- Base: official Sage image `sagemath/sagemath:10.8` (Ubuntu-based), pinned by digest in `repro.lock`.
+- Python 3.13 (primary): `uv` managed interpreter + venv at `/opt/venvs/py313`.
+- Python 2.7 (fallback): isolated `micromamba` env, wrapper `/usr/local/bin/py27`.
+- Sage 10.8: system `sage` CLI from the base image.
+- Tools: `flatter` (LLL accelerator), `r2` (radare2, built from source), `tshark`, headless Java runtime.
+- Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `or-tools` (cloned at pinned SHAs).
+
+## Verified (smoke)
+
+The image ships `/opt/verify/smoke.sh` which checks:
+
+- `sage --version` is **10.8 stable**, and `sage -c 'print(2+2)'` works.
+- Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`.
+- `gf2bv` runs under Python 3.13 (only; see notes below).
+- System tools present: `java`, `r2`, `tshark`, `flatter`.
+- `crypto-attacks` unit tests pass under `sage -python` (85 tests).
+
+## Notes / intentional exclusions
+
+- `gf2bv` is installed into **Python 3.13 only**, not into Sage’s Python (stability-first; avoids native-extension crash risk).
+- `pycryptosat` is **not installed into Sage’s Python** due to observed binary/ABI symbol mismatch in this environment.
 
 ## Build
 
-From this directory:
+Reproducible build (recommended):
 
 ```bash
-docker build -t debian13-sage-ctf .
+bash repro-build.sh --update --base-image sagemath/sagemath:10.8 --dockerfile Dockerfile.official --tag sage-ctf:10.8
 ```
 
-## Dockerfile modes
-
-- `Dockerfile`: Debian 13 base + build Sage from source (slow but Debian-native).
-- `Dockerfile.official`: base on `sagemath/sagemath:10.8` (fast, but Ubuntu-based).
-
-## Reproducible build (recommended)
-
-Use the single script `docker/debian13-sage-ctf/repro-build.sh` to pin upstream git commits + tool versions into `docker/debian13-sage-ctf/repro.lock`, then build with those pins.
+Then run smoke:
 
 ```bash
-bash docker/debian13-sage-ctf/repro-build.sh --update --tag debian13-sage-ctf:repro
+docker run --rm --entrypoint bash -t sage-ctf:10.8 -lc /opt/verify/smoke.sh
 ```
 
-Fast (official Sage base):
+## Run (interactive)
 
 ```bash
-bash docker/debian13-sage-ctf/repro-build.sh --update --base-image sagemath/sagemath:10.8 --dockerfile Dockerfile.official --tag sage-ctf:10.8
+docker run --rm -it sage-ctf:10.8 bash
 ```
 
-By default, Sage is pinned to `10.8` (to satisfy reproducibility + a fixed Sage major/minor). Override if needed:
+## Dockerfile options
 
-```bash
-bash docker/debian13-sage-ctf/repro-build.sh --update --sage-version 10.8 --tag debian13-sage-ctf:repro
-```
+- `Dockerfile.official` (recommended): starts from `sagemath/sagemath:10.8`.
+- `Dockerfile`: Debian 13 base + build Sage from source (very slow; may require extra tuning).
 
-Quick (skip Sage build):
+## Reproducibility
 
-```bash
-bash docker/debian13-sage-ctf/repro-build.sh --update --quick --tag debian13-sage-ctf:quick
-```
+- `repro-build.sh` writes/uses `repro.lock` to pin:
+  - base image digest
+  - tool versions (`uv`, `micromamba`)
+  - git SHAs for: Sage (tag 10.8), `flatter`, `radare2`, `gf2bv`, `crypto-attacks`, `or-tools`
 
-Key build args:
+Key build args (advanced):
 
 - `ENABLE_SAGE` (default `1`)
 - `SAGE_BRANCH` (default `master`)
@@ -58,37 +66,11 @@ Key build args:
 - `SAGE_MAKEFLAGS` (default `-j$(nproc) -l$(nproc).5`)
 - `SAGE_BUILD_STEP` (default `make`, options: `none`, `configure`, `make`)
 
-Example:
-
-```bash
-docker build -t debian13-sage-ctf --build-arg SAGE_BRANCH=master .
-```
-
-For a faster build that only validates Sage `./configure` (does not compile Sage):
-
-```bash
-docker build -t debian13-sage-ctf:configure --build-arg SAGE_BUILD_STEP=configure .
-```
-
-## Run
-
-```bash
-docker run --rm -it debian13-sage-ctf bash
-```
-
-## Verify (inside the container)
-
-```bash
-/opt/verify/smoke.sh
-```
-
-If dependency downloads occasionally time out during the build, increase `UV_HTTP_TIMEOUT` (default is set in the Dockerfiles; override by editing the Dockerfile `ENV` if needed).
-
 ## Remote build (via SSH)
 
 Copy this folder to your remote host and build there:
 
 ```bash
-scp -P <port> -r docker/debian13-sage-ctf root@<host>:/root/
-ssh -p <port> root@<host> 'cd /root/debian13-sage-ctf && bash repro-build.sh --dockerfile Dockerfile.official --tag sage-ctf:10.8'
+scp -P <port> -r . root@<host>:/root/sage-ctf-docker
+ssh -p <port> root@<host> 'cd /root/sage-ctf-docker && bash repro-build.sh --dockerfile Dockerfile.official --tag sage-ctf:10.8'
 ```
