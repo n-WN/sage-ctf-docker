@@ -21,6 +21,32 @@ The image ships `/opt/verify/smoke.sh` which checks:
 - System tools present: `java`, `r2`, `tshark`, `flatter`.
 - `crypto-attacks` unit tests pass under `sage -python` (85 tests).
 
+## Paths & usage cheatsheet
+
+- SageMath:
+  - Binary: `/usr/bin/sage` (symlink to `/home/sage/sage/sage`)
+  - Sage Python: `sage -python` (prints the Sage venv interpreter)
+  - Example: `sage -c "print(2+2)"`
+- Python 3.13 (uv venv):
+  - Venv: `/opt/venvs/py313`
+  - Python: `/opt/venvs/py313/bin/python`
+  - Activate: `source /opt/venvs/py313/bin/activate`
+- Python 2.7 (micromamba fallback):
+  - Wrapper: `/usr/local/bin/py27`
+  - Example: `py27 -c "import sys; print(sys.version)"`
+- Installed tools:
+  - `flatter`: `/usr/local/bin/flatter`
+  - `r2` (radare2): `/usr/local/bin/r2`
+  - `tshark`: `/usr/bin/tshark`
+  - `java`: `/usr/bin/java`
+- Sources cloned during build (pinned by `repro.lock`):
+  - `/opt/src/crypto-attacks`
+  - `/opt/src/gf2bv`
+  - `/opt/src/flatter`
+  - `/opt/src/or-tools`
+  - `/opt/src/radare2`
+- Verification script: `/opt/verify/smoke.sh`
+
 ## Notes / intentional exclusions
 
 - `gf2bv` is installed into **Python 3.13 only**, not into Sage’s Python (stability-first; avoids native-extension crash risk).
