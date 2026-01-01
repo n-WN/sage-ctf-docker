@@ -27,6 +27,7 @@ The image ships `/opt/verify/smoke.sh` which checks:
   - Binary: `/usr/bin/sage` (symlink to `/home/sage/sage/sage`)
   - Sage Python: `sage -python` (prints the Sage venv interpreter)
   - Example: `sage -c "print(2+2)"`
+  - Note: interactive `sage` uses `#!/usr/bin/env python3` via `sage-ipython`; this image sets `PATH` so `python3` is Sage’s venv Python.
 - Python 3.13 (uv venv):
   - Venv: `/opt/venvs/py313`
   - Python: `/opt/venvs/py313/bin/python`

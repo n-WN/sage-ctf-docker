@@ -29,6 +29,7 @@ echo "[smoke] gf2bv (py313)"
 
 echo "[smoke] sage"
 if command -v sage >/dev/null; then
+  python3 -V
   sage_ver="$(sage --version | tr -d '\r')"
   echo "${sage_ver}"
   if ! echo "${sage_ver}" | grep -qF 'SageMath version 10.8'; then

@@ -23,6 +23,10 @@ ENV LANG=C.UTF-8 \
     HOME=/home/sage \
     MAMBA_ROOT_PREFIX=/opt/micromamba
 
+# Make Sage's venv `python3` the default so `sage` can launch `sage-ipython`
+# (which uses `#!/usr/bin/env python3`) in interactive shells.
+ENV PATH=/home/sage/sage/local/var/lib/sage/venv/bin:/home/sage/sage/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 SHELL ["/bin/bash", "-lc"]
 
 USER root
@@ -43,6 +47,11 @@ RUN set -eux; \
     tshark \
   ; \
   rm -rf /var/lib/apt/lists/*
+
+# Create a stable symlink to Sage's Python venv (path includes the Python patch version).
+RUN set -eux; \
+  venv_root="$(/usr/bin/sage -python -c 'import sys, pathlib; print(pathlib.Path(sys.executable).resolve().parent.parent)')"; \
+  ln -sfn "${venv_root}" /home/sage/sage/local/var/lib/sage/venv
 
 # radare2 (r2) is not shipped in Ubuntu 22.04 apt repos; build from source for reproducibility.
 RUN set -eux; \
