@@ -185,7 +185,7 @@ RUN set -eux; \
 # Disable by setting `CTF_AUTO_SOURCE=0`.
 RUN set -eux; \
   # Avoid clobbering PATH in interactive shells (breaks Sage env if present).
-  sed -i '\\|^export PATH=/home/sage/sage/local/bin:|d' /home/sage/.bashrc 2>/dev/null || true; \
+  python3 -c 'from pathlib import Path; p=Path("/home/sage/.bashrc");\ntry:\n  lines=p.read_text().splitlines()\nexcept Exception:\n  raise SystemExit(0)\nlines=[l for l in lines if not l.startswith(\"export PATH=/home/sage/sage/local/bin:\")]\np.write_text(\"\\\\n\".join(lines)+\"\\\\n\")' || true; \
   grep -qF 'CTF_AUTO_SOURCE' /home/sage/.bashrc 2>/dev/null || cat >> /home/sage/.bashrc <<'EOF'
 
 # --- sage-ctf-docker: source CTF env (python -> py3.13) ---
