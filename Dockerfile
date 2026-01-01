@@ -99,11 +99,16 @@ RUN set -eux; \
   mkdir -p /opt/ctf/bin; \
   ln -sfn /opt/venvs/py313/bin/python /opt/ctf/bin/python; \
   ln -sfn /opt/venvs/py313/bin/pip /opt/ctf/bin/pip; \
+  :
+
+RUN set -eux; \
   cat > /opt/ctf/env.sh <<'EOF'
 #!/usr/bin/env bash
 export CTF_PY313=/opt/venvs/py313/bin/python
 export PATH=/opt/ctf/bin:"$PATH"
 EOF
+
+RUN set -eux; \
   chmod 0755 /opt/ctf/env.sh
 
 COPY requirements/py27.txt /tmp/requirements-py27.txt
