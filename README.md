@@ -121,6 +121,16 @@ docker run --rm -it sage-ctf:10.8 bash
   - tool versions (`uv`, `micromamba`)
   - git SHAs for: Sage (tag 10.8), `flatter`, `radare2`, `gf2bv`, `crypto-attacks`, `or-tools`
 
+## Image size (reference)
+
+On `linux/amd64`, `sage-ctf:10.8` is currently about **12.9GB** (`docker image ls`). This is mostly SageMath + its full dependency stack.
+
+## Image vs container names
+
+- Rename/tag the image (same bits, new name): `docker tag sage-ctf:10.8 yourname/sage-ctf:10.8`
+- Create a container with a custom name: `docker run --name my-ctf --rm -it sage-ctf:10.8 bash`
+- Rename an existing container: `docker rename old-name new-name`
+
 Key build args (advanced):
 
 - `ENABLE_SAGE` (default `1`)
