@@ -176,6 +176,22 @@ resolve_bun_sha256() {
   curl -fsSL "${url}" | sha256sum | awk '{print $1}'
 }
 
+resolve_jadx_version() {
+  git ls-remote --tags --refs "https://github.com/skylot/jadx.git" \
+    | awk '{print $2}' \
+    | sed 's#refs/tags/##' \
+    | sed 's/^v//' \
+    | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+    | sort -V \
+    | tail -n 1
+}
+
+resolve_jadx_sha256() {
+  local version="${1:?missing jadx version}"
+  local url="https://github.com/skylot/jadx/releases/download/v${version}/jadx-${version}.zip"
+  curl -fsSL "${url}" | sha256sum | awk '{print $1}'
+}
+
 write_lock() {
   local sage_repo="https://github.com/sagemath/sage.git"
   local flatter_repo="https://github.com/keeganryan/flatter.git"
@@ -204,6 +220,14 @@ write_lock() {
   bun_sha_linux_x64="$(resolve_bun_sha256 "${bun_version}" "x64")"
   bun_sha_linux_arm64="$(resolve_bun_sha256 "${bun_version}" "aarch64")"
 
+  local jadx_version jadx_sha256
+  jadx_version="$(resolve_jadx_version)"
+  if [ -z "${jadx_version}" ]; then
+    echo "failed to resolve jadx version" >&2
+    exit 1
+  fi
+  jadx_sha256="$(resolve_jadx_sha256 "${jadx_version}")"
+
   local sage_ref flatter_ref radare2_ref gf2bv_ref crypto_attacks_ref or_tools_ref
   sage_ref="$(tag_sha "$sage_repo" "${SAGE_VERSION}")"
   flatter_ref="$(head_sha "$flatter_repo")"
@@ -227,6 +251,9 @@ NODE_SHA256_LINUX_ARM64="${node_sha_linux_arm64}"
 BUN_VERSION="${bun_version}"
 BUN_SHA256_LINUX_X64="${bun_sha_linux_x64}"
 BUN_SHA256_LINUX_ARM64="${bun_sha_linux_arm64}"
+
+JADX_VERSION="${jadx_version}"
+JADX_SHA256="${jadx_sha256}"
 
 SAGE_REPO="${sage_repo}"
 SAGE_VERSION="${SAGE_VERSION}"
@@ -263,6 +290,8 @@ source "${LOCK_FILE}"
 : "${BUN_VERSION:?missing BUN_VERSION in repro.lock (run: ./repro-build.sh --update)}"
 : "${BUN_SHA256_LINUX_X64:?missing BUN_SHA256_LINUX_X64 in repro.lock (run: ./repro-build.sh --update)}"
 : "${BUN_SHA256_LINUX_ARM64:?missing BUN_SHA256_LINUX_ARM64 in repro.lock (run: ./repro-build.sh --update)}"
+: "${JADX_VERSION:?missing JADX_VERSION in repro.lock (run: ./repro-build.sh --update)}"
+: "${JADX_SHA256:?missing JADX_SHA256 in repro.lock (run: ./repro-build.sh --update)}"
 
 BUILD_ARGS=(
   --build-arg "BASE_IMAGE=${BASE_IMAGE}"
@@ -275,6 +304,8 @@ BUILD_ARGS=(
   --build-arg "BUN_VERSION=${BUN_VERSION}"
   --build-arg "BUN_SHA256_LINUX_X64=${BUN_SHA256_LINUX_X64}"
   --build-arg "BUN_SHA256_LINUX_ARM64=${BUN_SHA256_LINUX_ARM64}"
+  --build-arg "JADX_VERSION=${JADX_VERSION}"
+  --build-arg "JADX_SHA256=${JADX_SHA256}"
   --build-arg "SAGE_REPO=${SAGE_REPO}"
   --build-arg "SAGE_REF=${SAGE_REF}"
   --build-arg "FLATTER_REPO=${FLATTER_REPO}"

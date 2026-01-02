@@ -13,6 +13,8 @@ ARG NODE_SHA256_LINUX_ARM64=""
 ARG BUN_VERSION="1.3.5"
 ARG BUN_SHA256_LINUX_X64=""
 ARG BUN_SHA256_LINUX_ARM64=""
+ARG JADX_VERSION="1.5.3"
+ARG JADX_SHA256=""
 
 ARG FLATTER_REPO="https://github.com/keeganryan/flatter.git"
 ARG FLATTER_REF=""
@@ -83,6 +85,19 @@ RUN set -eux; \
   install -m 0755 "bun-linux-${bun_arch}/bun" /usr/local/bin/bun; \
   rm -rf "${bun_file}" "bun-linux-${bun_arch}"; \
   bun --version
+
+# JADX (pinned, CLI) - Java required (already installed)
+RUN set -eux; \
+  jadx_file="jadx-${JADX_VERSION}.zip"; \
+  curl -fsSL "https://github.com/skylot/jadx/releases/download/v${JADX_VERSION}/${jadx_file}" -o "${jadx_file}"; \
+  echo "${JADX_SHA256}  ${jadx_file}" | sha256sum -c -; \
+  rm -rf /opt/jadx "/opt/jadx-${JADX_VERSION}"; \
+  unzip -q "${jadx_file}" -d "/opt/jadx-${JADX_VERSION}"; \
+  rm -f "${jadx_file}"; \
+  ln -sfn "/opt/jadx-${JADX_VERSION}" /opt/jadx; \
+  ln -sfn /opt/jadx/bin/jadx /usr/local/bin/jadx; \
+  chmod 0755 /opt/jadx/bin/jadx; \
+  jadx --help >/dev/null
 
 # Create a stable symlink to Sage's Python venv (path includes the Python patch version).
 RUN set -eux; \
