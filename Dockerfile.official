@@ -189,6 +189,10 @@ RUN set -eux; \
   uv python install 3.13; \
   uv venv /opt/venvs/py313 --python 3.13; \
   uv pip install --python /opt/venvs/py313/bin/python -r /tmp/requirements-py313.txt; \
+  PY313_REAL="$(readlink -f /opt/venvs/py313/bin/python)"; \
+  PY313_PREFIX="$(dirname "$(dirname "$PY313_REAL")")"; \
+  echo "${PY313_PREFIX}/lib" > /etc/ld.so.conf.d/uv-python3.13.conf; \
+  ldconfig; \
   /opt/venvs/py313/bin/python -V
 
 RUN set -eux; \
