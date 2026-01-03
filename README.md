@@ -19,11 +19,11 @@ This repository builds a reproducible Docker image for CTF crypto/reversing that
 The image ships `/opt/verify/smoke.sh` which checks:
 
 - `sage --version` is **10.8 stable**, and `sage -c 'print(2+2)'` works.
-- Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`, `flask`, `httpx`, `scipy`, `gmsm`, `flatn`.
+- Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`, `flask`, `httpx`, `scipy`, `gmsm`, `flatn`, `fastecdsa`.
 - `gf2bv` runs under Python 3.13 (only; see notes below).
 - System tools present: `java`, `r2`, `tshark`, `flatter`.
 - `crypto-attacks` unit tests pass under `sage --python` (85 tests).
-- Sage Python imports: `flatn`, `cuso`, `lll_cvp`.
+- Sage Python imports: `flatn`, `cuso`, `lll_cvp`, `fastecdsa`.
 
 ## crypto-attacks 题型索引
 

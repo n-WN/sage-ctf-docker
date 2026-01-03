@@ -12,3 +12,4 @@ rich==14.1.0
 pytest==9.0.2
 ortools==9.14.6206
 zstandard==0.25.0
+fastecdsa==3.0.1

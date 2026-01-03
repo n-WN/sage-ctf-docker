@@ -15,6 +15,7 @@ echo "[smoke] python3.13 (uv venv)"
 /opt/venvs/py313/bin/python -c "import scipy; print('ok: scipy', scipy.__version__)"
 /opt/venvs/py313/bin/python -c "import gmsm; print('ok: gmsm')"
 /opt/venvs/py313/bin/python -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4 and len(out[0])==4; print('ok: flatn')"
+/opt/venvs/py313/bin/python -c "import fastecdsa; print('ok: fastecdsa')"
 
 echo "[smoke] ctf shim + bashrc wiring"
 test -x /opt/ctf/env.sh
@@ -108,6 +109,7 @@ if command -v sage >/dev/null; then
   sage --python -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4; print('ok: sage flatn')"
   sage --python -c "import cuso; from sage.all import var; x=var('x'); solns=cuso.find_small_roots([x**2 - 1], {x: 2}); assert any(int(s[x]) in (-1, 1) for s in solns); print('ok: sage cuso')"
   sage --python -c "import lll_cvp; from sage.all import matrix, ZZ; assert lll_cvp.has_flatter; M=matrix(ZZ, [[1,2],[3,4]]); R=lll_cvp.auto_reduction(M); assert R.nrows()==2 and R.ncols()==2; print('ok: sage lll_cvp')"
+  sage --python -c "import fastecdsa; print('ok: sage fastecdsa')"
 else
   echo "[smoke] sage missing; skip sage checks (build with SAGE_BUILD_STEP=make)" >&2
 fi
