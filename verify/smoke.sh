@@ -14,6 +14,7 @@ echo "[smoke] python3.13 (uv venv)"
 /opt/venvs/py313/bin/python -c "import flask, httpx; print('ok: flask/httpx')"
 /opt/venvs/py313/bin/python -c "import scipy; print('ok: scipy', scipy.__version__)"
 /opt/venvs/py313/bin/python -c "import gmsm; print('ok: gmsm')"
+/opt/venvs/py313/bin/python -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4 and len(out[0])==4; print('ok: flatn')"
 
 echo "[smoke] ctf shim + bashrc wiring"
 test -x /opt/ctf/env.sh
@@ -104,6 +105,8 @@ if command -v sage >/dev/null; then
   sage --python -c "import cryptography, nacl; print('ok: sage cryptography/pynacl')"
   sage --python -c "import z3; print('ok: sage z3')"
   sage --python -c "import zstandard; print('ok: sage zstandard')"
+  sage --python -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4; print('ok: sage flatn')"
+  sage --python -c "import cuso; from sage.all import var; x=var('x'); solns=cuso.find_small_roots([x^2 - 1], {x: 2}); assert any(int(s[x]) in (-1, 1) for s in solns); print('ok: sage cuso')"
 else
   echo "[smoke] sage missing; skip sage checks (build with SAGE_BUILD_STEP=make)" >&2
 fi

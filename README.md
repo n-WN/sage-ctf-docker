@@ -11,17 +11,19 @@ This repository builds a reproducible Docker image for CTF crypto/reversing that
 - Rust toolchain: `rustup` (official installer), pinned toolchain via `repro.lock`.
 - JS tooling: Node.js + Bun (pinned, installed from official upstream release artifacts).
 - Tools: `flatter` (LLL accelerator), `r2` (radare2, built from source), `yafu`, `tshark`, headless Java runtime, `jadx` (DEX decompiler, CLI).
-- Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `or-tools` (cloned at pinned SHAs).
+- Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `or-tools`, `cuso` (cloned at pinned SHAs).
+- Python packages: `flatn` (Python wrapper for flatter, installed into both CTF Python 3.13 and Sage Python).
 
 ## Verified (smoke)
 
 The image ships `/opt/verify/smoke.sh` which checks:
 
 - `sage --version` is **10.8 stable**, and `sage -c 'print(2+2)'` works.
-- Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`.
+- Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`, `flask`, `httpx`, `scipy`, `gmsm`, `flatn`.
 - `gf2bv` runs under Python 3.13 (only; see notes below).
 - System tools present: `java`, `r2`, `tshark`, `flatter`.
 - `crypto-attacks` unit tests pass under `sage --python` (85 tests).
+- Sage Python imports: `flatn`, `cuso`.
 
 ## crypto-attacks 题型索引
 
@@ -177,6 +179,7 @@ The image ships `/opt/verify/smoke.sh` which checks:
 - `/opt/src/flatter`
 - `/opt/src/or-tools`
 - `/opt/src/radare2`
+- `/opt/src/cuso`
 
 ### 验证脚本
 
@@ -226,7 +229,7 @@ Notes:
 
 ## Image size (reference)
 
-On `linux/amd64`, `sage-ctf:10.8` is currently about **12.9GB** (`docker image ls`). This is mostly SageMath + its full dependency stack.
+On `linux/amd64`, `sage-ctf:10.8` is currently about **14–15GB** (`docker image ls`). This is mostly SageMath + its full dependency stack.
 
 ## Image vs container names
 

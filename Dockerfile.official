@@ -22,6 +22,8 @@ ARG RADARE2_REPO="https://github.com/radareorg/radare2.git"
 ARG RADARE2_REF=""
 ARG GF2BV_REPO="https://github.com/maple3142/gf2bv.git"
 ARG GF2BV_REF=""
+ARG CUSO_REPO="https://github.com/keeganryan/cuso.git"
+ARG CUSO_REF=""
 ARG YAFU_REPO="https://github.com/bbuhrow/yafu.git"
 ARG YAFU_REF=""
 ARG CRYPTO_ATTACKS_REPO="https://github.com/jvdsn/crypto-attacks.git"
@@ -353,6 +355,16 @@ RUN set -eux; \
   /opt/venvs/py313/bin/python -c "from gf2bv import LinearSystem; lin=LinearSystem([1,1,1,1]); a,b,c,d=lin.gens(); assert lin.solve_one([a^b^c^1,b^d,a^c^1]) is not None"
 
 RUN set -eux; \
+  if [ -n "${CUSO_REF}" ]; then \
+    git init /opt/src/cuso; \
+    git -C /opt/src/cuso remote add origin "${CUSO_REPO}"; \
+    git -C /opt/src/cuso fetch --depth 1 origin "${CUSO_REF}"; \
+    git -C /opt/src/cuso checkout --detach FETCH_HEAD; \
+  else \
+    git clone --depth 1 "${CUSO_REPO}" /opt/src/cuso; \
+  fi
+
+RUN set -eux; \
   if [ -n "${CRYPTO_ATTACKS_REF}" ]; then \
     git init /opt/src/crypto-attacks; \
     git -C /opt/src/crypto-attacks remote add origin "${CRYPTO_ATTACKS_REPO}"; \
@@ -382,6 +394,11 @@ RUN set -eux; \
   SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
   uv pip install --python "${SAGE_PY}" -r /tmp/requirements-sage.txt; \
   :
+
+RUN set -eux; \
+  SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
+  uv pip install --python "${SAGE_PY}" /opt/src/cuso; \
+  "${SAGE_PY}" -c "import cuso; print('ok: cuso (sage)')"
 
 RUN set -eux; \
   cd /opt/src/crypto-attacks; \
