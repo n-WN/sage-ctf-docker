@@ -12,4 +12,4 @@ rich==14.1.0
 pytest==9.0.2
 ortools==9.14.6206
 zstandard==0.25.0
-flatn==0.3.3
+flatn==0.3.2
