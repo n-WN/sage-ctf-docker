@@ -54,7 +54,7 @@ RUN set -eux; \
     libreadline-dev libsqlite3-dev libncurses-dev libgdbm-dev libnsl-dev \
     cmake ninja-build \
     gdb strace \
-    libgmp-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
+    libgmp-dev libecm-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
     libm4ri-dev \
     tshark \
     netcat-openbsd \
@@ -141,10 +141,17 @@ RUN set -eux; \
   else \
     git clone --depth 1 "${YAFU_REPO}" /opt/src/yafu; \
   fi; \
+  mkdir -p /opt/src/gmp-install/6.2.0-gcc /opt/src/ecm-install/7.0.5-gcc; \
+  ln -sfn /usr/include /opt/src/gmp-install/6.2.0-gcc/include; \
+  ln -sfn /usr/lib/x86_64-linux-gnu /opt/src/gmp-install/6.2.0-gcc/lib; \
+  ln -sfn /usr/include /opt/src/ecm-install/7.0.5-gcc/include; \
+  ln -sfn /usr/lib/x86_64-linux-gnu /opt/src/ecm-install/7.0.5-gcc/lib; \
   cd /opt/src/yafu; \
-  ./configure --prefix=/usr/local; \
-  make -j"$(nproc)"; \
-  make install; \
+  make -f Makefile.gcc -j"$(nproc)" ECM=1 yafu; \
+  rm -rf /opt/tools/yafu; \
+  mkdir -p /opt/tools/yafu; \
+  cp -a yafu yafu.ini docfile.txt factor gnfs bin ggnfs-params-Gimarel.txt ggnfs-params-table.txt /opt/tools/yafu/; \
+  ln -sfn /opt/tools/yafu/yafu /usr/local/bin/yafu; \
   yafu -v >/dev/null
 
 RUN set -eux; \
