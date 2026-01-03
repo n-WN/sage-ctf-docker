@@ -295,10 +295,13 @@ RUN set -eux; \
 
 RUN set -eux; \
   mkdir -p /opt/src /opt/verify /opt/patches; \
-  chown -R sage:sage /opt/src /opt/verify /opt/patches
+  mkdir -p /opt/work; \
+  ln -sfn /opt/tools/yafu/yafu.ini /opt/work/yafu.ini; \
+  ln -sfn /opt/tools/yafu/docfile.txt /opt/work/docfile.txt; \
+  chown -R sage:sage /opt/src /opt/verify /opt/patches /opt/work
 
 USER sage
-WORKDIR /opt
+WORKDIR /opt/work
 
 ENTRYPOINT ["/opt/ctf/entrypoint.sh"]
 CMD ["bash"]
