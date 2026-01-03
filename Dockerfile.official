@@ -419,12 +419,12 @@ RUN set -eux; \
 RUN set -eux; \
   SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
   uv pip install --python "${SAGE_PY}" /opt/src/flatn; \
-  "${SAGE_PY}" -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4; print('ok: flatn (sage)')"
+  /usr/bin/sage --python -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4; print('ok: flatn (sage)')"
 
 RUN set -eux; \
   SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
   uv pip install --python "${SAGE_PY}" /opt/src/cuso; \
-  "${SAGE_PY}" -c "import cuso; print('ok: cuso (sage)')"
+  /usr/bin/sage --python -c "import cuso; print('ok: cuso (sage)')"
 
 RUN set -eux; \
   cd /opt/src/crypto-attacks; \
