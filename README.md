@@ -151,6 +151,7 @@ The image ships `/opt/verify/smoke.sh` which checks:
 ### 默认 shell 行为（避免踩坑）
 
 - `docker run --rm -it ... bash`：交互式 `bash` 默认会 `source /opt/ctf/env.sh`，把 `python/python3/pip/pip3` 指向 Python 3.13。
+- 默认工作目录：`/opt/work`（可写；并放置了 `yafu.ini`/`docfile.txt` 的链接，避免 yafu 在不可写目录下无法创建 `session.log`）。
 - 关闭自动 source：`export CTF_AUTO_SOURCE=0`
 - 不推荐 `source /opt/venvs/py313/bin/activate`：会进一步改动 shell 状态；本仓库已经用 `/opt/ctf/env.sh` 解决 `python/python3` 的默认指向。
 - 如需强制使用 Sage 的 `python3/pip3`：用绝对路径 `/home/sage/sage/local/var/lib/sage/venv/bin/python3`、`/home/sage/sage/local/var/lib/sage/venv/bin/pip3`，或使用 `sage --python` / `sage --pip`。
