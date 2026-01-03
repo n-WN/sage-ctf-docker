@@ -11,8 +11,8 @@ This repository builds a reproducible Docker image for CTF crypto/reversing that
 - Rust toolchain: `rustup` (official installer), pinned toolchain via `repro.lock`.
 - JS tooling: Node.js + Bun (pinned, installed from official upstream release artifacts).
 - Tools: `flatter` (LLL accelerator), `r2` (radare2, built from source), `yafu`, `tshark`, headless Java runtime, `jadx` (DEX decompiler, CLI).
-- Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `or-tools`, `cuso` (cloned at pinned SHAs).
-- Python packages: `flatn` (Python wrapper for flatter, installed into both CTF Python 3.13 and Sage Python).
+- Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `or-tools`, `cuso`, `flatn` (cloned at pinned SHAs).
+- Python packages: `flatn` (Python wrapper for flatter, installed into both CTF Python 3.13 and Sage Python; this build uses the system `flatter` binary).
 
 ## Verified (smoke)
 
@@ -180,6 +180,7 @@ The image ships `/opt/verify/smoke.sh` which checks:
 - `/opt/src/or-tools`
 - `/opt/src/radare2`
 - `/opt/src/cuso`
+- `/opt/src/flatn`
 
 ### 验证脚本
 
@@ -225,7 +226,7 @@ Notes:
 - `repro-build.sh` writes/uses `repro.lock` to pin:
   - base image digest
   - tool versions (`uv`, `micromamba`)
-  - git SHAs for: Sage (tag 10.8), `flatter`, `radare2`, `gf2bv`, `crypto-attacks`, `or-tools`
+  - git SHAs for: Sage (tag 10.8), `flatter`, `radare2`, `gf2bv`, `cuso`, `flatn`, `crypto-attacks`, `or-tools`
 
 ## Image size (reference)
 

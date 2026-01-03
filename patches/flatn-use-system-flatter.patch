@@ -1,0 +1,40 @@
+diff --git a/flatn/_flat.py b/flatn/_flat.py
+index 802fbc5..4471ab4 100644
+--- a/flatn/_flat.py
++++ b/flatn/_flat.py
+@@ -1,18 +1,26 @@
+ 
+ import os
++import shutil
+ import subprocess
++from pathlib import Path
+ import importlib.resources as pkg_resources
+ 
+ PACKAGE = 'flatn'
+ BIN_NAME = 'flatter'
+ 
+ # get file path
+ with pkg_resources.path(PACKAGE, '') as path_bin:
+-    assert os.path.exists(path_bin), f"Path {path_bin} does not exist"
+-    __path_flatter = path_bin / BIN_NAME
+-
+-# sanity: check if the file exists
+-assert os.path.exists(path_bin), f"Path {path_bin} does not exist"
+-assert os.path.exists(__path_flatter), f"Path {__path_flatter} does not exist"
++    if not os.path.exists(path_bin):
++        raise FileNotFoundError(f"Path {path_bin} does not exist")
++    candidate = Path(path_bin) / BIN_NAME
++    if candidate.exists():
++        __path_flatter = candidate
++    else:
++        sys_flatter = shutil.which(BIN_NAME)
++        if sys_flatter is None:
++            raise FileNotFoundError(
++                f"Missing {BIN_NAME}: expected {candidate} or a '{BIN_NAME}' on PATH"
++            )
++        __path_flatter = Path(sys_flatter)
+ 
+ def run_flatter_raw(
+     lattice_str: str,
+     verbose: bool = False,
+     quiet: bool = False,

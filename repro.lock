@@ -32,6 +32,9 @@ GF2BV_REF="4801fe78d50797ec9aee6f7fff5251e4a5a08f3f"
 CUSO_REPO="https://github.com/keeganryan/cuso.git"
 CUSO_REF="fb2747d2105a8e48499bf10a3a717cf80c14d079"
 
+FLATN_REPO="https://github.com/zksecurity/flatn.git"
+FLATN_REF="b31400118ef5dceba9d8608cda9dc05422000496"
+
 YAFU_REPO="https://github.com/bbuhrow/yafu.git"
 YAFU_REF="41d5b09571eadb292e67a4233fcd1d0e5e195ed9"
 

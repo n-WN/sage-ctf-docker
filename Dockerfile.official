@@ -24,6 +24,8 @@ ARG GF2BV_REPO="https://github.com/maple3142/gf2bv.git"
 ARG GF2BV_REF=""
 ARG CUSO_REPO="https://github.com/keeganryan/cuso.git"
 ARG CUSO_REF=""
+ARG FLATN_REPO="https://github.com/zksecurity/flatn.git"
+ARG FLATN_REF=""
 ARG YAFU_REPO="https://github.com/bbuhrow/yafu.git"
 ARG YAFU_REF=""
 ARG CRYPTO_ATTACKS_REPO="https://github.com/jvdsn/crypto-attacks.git"
@@ -365,6 +367,25 @@ RUN set -eux; \
   fi
 
 RUN set -eux; \
+  if [ -n "${FLATN_REF}" ]; then \
+    git init /opt/src/flatn; \
+    git -C /opt/src/flatn remote add origin "${FLATN_REPO}"; \
+    git -C /opt/src/flatn fetch --depth 1 origin "${FLATN_REF}"; \
+    git -C /opt/src/flatn checkout --detach FETCH_HEAD; \
+  else \
+    git clone --depth 1 "${FLATN_REPO}" /opt/src/flatn; \
+  fi
+
+COPY patches/flatn-use-system-flatter.patch /opt/patches/flatn-use-system-flatter.patch
+RUN set -eux; \
+  cd /opt/src/flatn; \
+  git apply /opt/patches/flatn-use-system-flatter.patch
+
+RUN set -eux; \
+  uv pip install --python /opt/venvs/py313/bin/python /opt/src/flatn; \
+  /opt/venvs/py313/bin/python -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4; print('ok: flatn (py313)')"
+
+RUN set -eux; \
   if [ -n "${CRYPTO_ATTACKS_REF}" ]; then \
     git init /opt/src/crypto-attacks; \
     git -C /opt/src/crypto-attacks remote add origin "${CRYPTO_ATTACKS_REPO}"; \
@@ -394,6 +415,11 @@ RUN set -eux; \
   SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
   uv pip install --python "${SAGE_PY}" -r /tmp/requirements-sage.txt; \
   :
+
+RUN set -eux; \
+  SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
+  uv pip install --python "${SAGE_PY}" /opt/src/flatn; \
+  "${SAGE_PY}" -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4; print('ok: flatn (sage)')"
 
 RUN set -eux; \
   SAGE_PY="$(/usr/bin/sage --python -c 'import sys; print(sys.executable)')"; \
