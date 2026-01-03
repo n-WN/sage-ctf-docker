@@ -18,6 +18,7 @@ test -x /opt/ctf/env.sh
 test -x /opt/ctf/bin/python
 test -x /opt/ctf/bin/python3
 test -x /opt/ctf/bin/pip3
+test -x /opt/ctf/bin/sage
 test -x /opt/ctf/bin/python2
 test -x /opt/ctf/bin/pip2
 /opt/ctf/bin/python -V | grep -qF 'Python 3.13'
@@ -26,6 +27,8 @@ grep -qF 'source /opt/ctf/env.sh' /home/sage/.bashrc
 bash -ic 'python -V' 2>&1 | grep -qF 'Python 3.13'
 bash -ic 'python3 -V' 2>&1 | grep -qF 'Python 3.13'
 bash -ic 'pip3 -V' 2>&1 | grep -qF '(python 3.13)'
+bash -ic 'command -v sage' 2>&1 | grep -qF '/opt/ctf/bin/sage'
+bash -ic 'sage --version' 2>&1 | grep -qF 'SageMath version 10.8'
 bash -ic 'python2 -V' 2>&1 | grep -qF 'Python 2.7'
 bash -ic 'pip2 -V' 2>&1 | grep -qF '(python 2.7'
 if command -v sage >/dev/null; then
