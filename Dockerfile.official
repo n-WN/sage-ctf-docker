@@ -51,6 +51,7 @@ RUN set -eux; \
     libssl-dev libffi-dev libbz2-dev liblzma-dev zlib1g-dev \
     libreadline-dev libsqlite3-dev libncurses-dev libgdbm-dev libnsl-dev \
     cmake ninja-build \
+    gdb strace \
     libgmp-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
     libm4ri-dev \
     tshark \

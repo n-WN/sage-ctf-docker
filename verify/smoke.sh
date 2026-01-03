@@ -61,6 +61,11 @@ r2 -v >/dev/null
 command -v tshark >/dev/null
 tshark -v >/dev/null
 
+command -v strace >/dev/null
+strace -V >/dev/null
+command -v gdb >/dev/null
+gdb --version >/dev/null
+
 echo "[smoke] flatter"
 command -v flatter >/dev/null
 flatter -h >/dev/null
