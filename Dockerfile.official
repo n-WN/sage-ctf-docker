@@ -381,4 +381,4 @@ RUN set -eux; \
   chown sage:sage /opt/verify/smoke.sh
 
 USER sage
-WORKDIR /opt
+WORKDIR /opt/work
