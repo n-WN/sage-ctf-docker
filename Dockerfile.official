@@ -22,6 +22,8 @@ ARG RADARE2_REPO="https://github.com/radareorg/radare2.git"
 ARG RADARE2_REF=""
 ARG GF2BV_REPO="https://github.com/maple3142/gf2bv.git"
 ARG GF2BV_REF=""
+ARG YAFU_REPO="https://github.com/bbuhrow/yafu.git"
+ARG YAFU_REF=""
 ARG CRYPTO_ATTACKS_REPO="https://github.com/jvdsn/crypto-attacks.git"
 ARG CRYPTO_ATTACKS_REF=""
 ARG OR_TOOLS_REPO="https://github.com/google/or-tools.git"
@@ -128,6 +130,22 @@ RUN set -eux; \
   if [ -n "${RADARE2_REF}" ]; then git -c advice.detachedHead=false checkout "${RADARE2_REF}"; fi; \
   sys/install.sh --prefix=/usr/local; \
   r2 -v >/dev/null
+
+RUN set -eux; \
+  rm -rf /opt/src/yafu; \
+  if [ -n "${YAFU_REF}" ]; then \
+    git init /opt/src/yafu; \
+    git -C /opt/src/yafu remote add origin "${YAFU_REPO}"; \
+    git -C /opt/src/yafu fetch --depth 1 origin "${YAFU_REF}"; \
+    git -C /opt/src/yafu checkout --detach FETCH_HEAD; \
+  else \
+    git clone --depth 1 "${YAFU_REPO}" /opt/src/yafu; \
+  fi; \
+  cd /opt/src/yafu; \
+  ./configure --prefix=/usr/local; \
+  make -j"$(nproc)"; \
+  make install; \
+  yafu -v >/dev/null
 
 RUN set -eux; \
   arch="$(uname -m)"; \

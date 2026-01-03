@@ -197,6 +197,7 @@ write_lock() {
   local flatter_repo="https://github.com/keeganryan/flatter.git"
   local radare2_repo="https://github.com/radareorg/radare2.git"
   local gf2bv_repo="https://github.com/maple3142/gf2bv.git"
+  local yafu_repo="https://github.com/bbuhrow/yafu.git"
   local crypto_attacks_repo="https://github.com/jvdsn/crypto-attacks.git"
   local or_tools_repo="https://github.com/google/or-tools.git"
 
@@ -228,11 +229,12 @@ write_lock() {
   fi
   jadx_sha256="$(resolve_jadx_sha256 "${jadx_version}")"
 
-  local sage_ref flatter_ref radare2_ref gf2bv_ref crypto_attacks_ref or_tools_ref
+  local sage_ref flatter_ref radare2_ref gf2bv_ref yafu_ref crypto_attacks_ref or_tools_ref
   sage_ref="$(tag_sha "$sage_repo" "${SAGE_VERSION}")"
   flatter_ref="$(head_sha "$flatter_repo")"
   radare2_ref="$(head_sha "$radare2_repo")"
   gf2bv_ref="$(head_sha "$gf2bv_repo")"
+  yafu_ref="$(head_sha "$yafu_repo")"
   crypto_attacks_ref="$(head_sha "$crypto_attacks_repo")"
   or_tools_ref="$(head_sha "$or_tools_repo")"
 
@@ -268,6 +270,9 @@ RADARE2_REF="${radare2_ref}"
 GF2BV_REPO="${gf2bv_repo}"
 GF2BV_REF="${gf2bv_ref}"
 
+YAFU_REPO="${yafu_repo}"
+YAFU_REF="${yafu_ref}"
+
 CRYPTO_ATTACKS_REPO="${crypto_attacks_repo}"
 CRYPTO_ATTACKS_REF="${crypto_attacks_ref}"
 
@@ -293,6 +298,9 @@ source "${LOCK_FILE}"
 : "${JADX_VERSION:?missing JADX_VERSION in repro.lock (run: ./repro-build.sh --update)}"
 : "${JADX_SHA256:?missing JADX_SHA256 in repro.lock (run: ./repro-build.sh --update)}"
 
+: "${YAFU_REPO:?missing YAFU_REPO in repro.lock (run: ./repro-build.sh --update)}"
+: "${YAFU_REF:?missing YAFU_REF in repro.lock (run: ./repro-build.sh --update)}"
+
 BUILD_ARGS=(
   --build-arg "BASE_IMAGE=${BASE_IMAGE}"
   --build-arg "UV_VERSION=${UV_VERSION}"
@@ -314,6 +322,8 @@ BUILD_ARGS=(
   --build-arg "RADARE2_REF=${RADARE2_REF}"
   --build-arg "GF2BV_REPO=${GF2BV_REPO}"
   --build-arg "GF2BV_REF=${GF2BV_REF}"
+  --build-arg "YAFU_REPO=${YAFU_REPO}"
+  --build-arg "YAFU_REF=${YAFU_REF}"
   --build-arg "CRYPTO_ATTACKS_REPO=${CRYPTO_ATTACKS_REPO}"
   --build-arg "CRYPTO_ATTACKS_REF=${CRYPTO_ATTACKS_REF}"
   --build-arg "OR_TOOLS_REPO=${OR_TOOLS_REPO}"

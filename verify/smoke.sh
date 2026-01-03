@@ -70,6 +70,10 @@ echo "[smoke] flatter"
 command -v flatter >/dev/null
 flatter -h >/dev/null
 
+echo "[smoke] yafu"
+command -v yafu >/dev/null
+printf 'factor(2021)\n' | yafu >/dev/null
+
 echo "[smoke] gf2bv (py313)"
 /opt/venvs/py313/bin/python -c "from gf2bv import LinearSystem; lin=LinearSystem([1,1,1,1]); a,b,c,d=lin.gens(); sol=lin.solve_one([a^b^c^1,b^d,a^c^1]); assert sol is not None; print('ok: gf2bv py313')"
 
