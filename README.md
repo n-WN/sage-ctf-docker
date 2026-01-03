@@ -138,6 +138,8 @@ The image ships `/opt/verify/smoke.sh` which checks:
 | `r2` | `/usr/local/bin/r2` | radare2 |
 | `strace` | `/usr/bin/strace` | 系统调用跟踪器 |
 | `gdb` | `/usr/bin/gdb` | 调试器（用于服务端/本地调试） |
+| `rg` | `/usr/bin/rg` | ripgrep（快速文本搜索） |
+| `fd` | `/usr/local/bin/fd` | fd（快速文件查找；Ubuntu 的 `fdfind` 兼容别名） |
 | `tshark` | `/usr/bin/tshark` | 抓包/PCAP 工具 |
 | `java` | `/usr/bin/java` | Java runtime（headless） |
 | `node` | `/usr/local/bin/node` | Node.js（用于 CTF/web tooling） |

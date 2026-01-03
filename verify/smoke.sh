@@ -39,6 +39,10 @@ if command -v sage >/dev/null; then
 fi
 
 echo "[smoke] system tools"
+command -v rg >/dev/null
+rg --version >/dev/null
+command -v fd >/dev/null
+fd --version >/dev/null
 command -v java >/dev/null
 java -version >/dev/null 2>&1 || true
 command -v nc >/dev/null
