@@ -197,6 +197,7 @@ write_lock() {
   local flatter_repo="https://github.com/keeganryan/flatter.git"
   local radare2_repo="https://github.com/radareorg/radare2.git"
   local gf2bv_repo="https://github.com/maple3142/gf2bv.git"
+  local lll_cvp_repo="https://github.com/maple3142/lll_cvp.git"
   local cuso_repo="https://github.com/keeganryan/cuso.git"
   local flatn_repo="https://github.com/zksecurity/flatn.git"
   local yafu_repo="https://github.com/bbuhrow/yafu.git"
@@ -231,11 +232,12 @@ write_lock() {
   fi
   jadx_sha256="$(resolve_jadx_sha256 "${jadx_version}")"
 
-  local sage_ref flatter_ref radare2_ref gf2bv_ref cuso_ref flatn_ref yafu_ref crypto_attacks_ref or_tools_ref
+  local sage_ref flatter_ref radare2_ref gf2bv_ref lll_cvp_ref cuso_ref flatn_ref yafu_ref crypto_attacks_ref or_tools_ref
   sage_ref="$(tag_sha "$sage_repo" "${SAGE_VERSION}")"
   flatter_ref="$(head_sha "$flatter_repo")"
   radare2_ref="$(head_sha "$radare2_repo")"
   gf2bv_ref="$(head_sha "$gf2bv_repo")"
+  lll_cvp_ref="$(head_sha "$lll_cvp_repo")"
   cuso_ref="$(head_sha "$cuso_repo")"
   flatn_ref="$(head_sha "$flatn_repo")"
   yafu_ref="$(head_sha "$yafu_repo")"
@@ -273,6 +275,9 @@ RADARE2_REF="${radare2_ref}"
 
 GF2BV_REPO="${gf2bv_repo}"
 GF2BV_REF="${gf2bv_ref}"
+
+LLL_CVP_REPO="${lll_cvp_repo}"
+LLL_CVP_REF="${lll_cvp_ref}"
 
 CUSO_REPO="${cuso_repo}"
 CUSO_REF="${cuso_ref}"
@@ -314,6 +319,8 @@ source "${LOCK_FILE}"
 : "${CUSO_REF:?missing CUSO_REF in repro.lock (run: ./repro-build.sh --update)}"
 : "${FLATN_REPO:?missing FLATN_REPO in repro.lock (run: ./repro-build.sh --update)}"
 : "${FLATN_REF:?missing FLATN_REF in repro.lock (run: ./repro-build.sh --update)}"
+: "${LLL_CVP_REPO:?missing LLL_CVP_REPO in repro.lock (run: ./repro-build.sh --update)}"
+: "${LLL_CVP_REF:?missing LLL_CVP_REF in repro.lock (run: ./repro-build.sh --update)}"
 
 BUILD_ARGS=(
   --build-arg "BASE_IMAGE=${BASE_IMAGE}"
@@ -336,6 +343,8 @@ BUILD_ARGS=(
   --build-arg "RADARE2_REF=${RADARE2_REF}"
   --build-arg "GF2BV_REPO=${GF2BV_REPO}"
   --build-arg "GF2BV_REF=${GF2BV_REF}"
+  --build-arg "LLL_CVP_REPO=${LLL_CVP_REPO}"
+  --build-arg "LLL_CVP_REF=${LLL_CVP_REF}"
   --build-arg "CUSO_REPO=${CUSO_REPO}"
   --build-arg "CUSO_REF=${CUSO_REF}"
   --build-arg "FLATN_REPO=${FLATN_REPO}"
