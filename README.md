@@ -201,6 +201,11 @@ docker run --rm --entrypoint bash -t sage-ctf:10.8 -lc /opt/verify/smoke.sh
 docker run --rm -it sage-ctf:10.8 bash
 ```
 
+Notes:
+
+- This image overrides the upstream `sagemath/sagemath` ENTRYPOINT (which wraps commands as `sage -sh -c ...`). That wrapper is the main reason `docker run ... bash` could behave inconsistently.
+- If you want the upstream behavior for debugging: `docker run --rm -it --entrypoint /usr/local/bin/sage-entrypoint sage-ctf:10.8 bash`
+
 ## Dockerfile options
 
 - `Dockerfile.official` (recommended): starts from `sagemath/sagemath:10.8`.

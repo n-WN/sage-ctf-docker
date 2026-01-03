@@ -163,10 +163,11 @@ RUN set -eux; \
 # (Sage's interactive REPL uses `#!/usr/bin/env python3`).
 RUN set -eux; \
   mkdir -p /opt/ctf/bin; \
-  ln -sfn /opt/venvs/py313/bin/python /opt/ctf/bin/python; \
-  ln -sfn /opt/venvs/py313/bin/pip /opt/ctf/bin/pip; \
-  ln -sfn /opt/venvs/py313/bin/python /opt/ctf/bin/python3; \
-  ln -sfn /opt/venvs/py313/bin/pip /opt/ctf/bin/pip3
+  printf '%s\n' '#!/usr/bin/env bash' 'exec /opt/venvs/py313/bin/python "$@"' > /opt/ctf/bin/python; \
+  printf '%s\n' '#!/usr/bin/env bash' 'exec /opt/venvs/py313/bin/python "$@"' > /opt/ctf/bin/python3; \
+  printf '%s\n' '#!/usr/bin/env bash' 'exec /opt/venvs/py313/bin/python -m pip "$@"' > /opt/ctf/bin/pip; \
+  printf '%s\n' '#!/usr/bin/env bash' 'exec /opt/venvs/py313/bin/python -m pip "$@"' > /opt/ctf/bin/pip3; \
+  chmod 0755 /opt/ctf/bin/python /opt/ctf/bin/python3 /opt/ctf/bin/pip /opt/ctf/bin/pip3
 
 RUN set -eux; \
   cat > /opt/ctf/env.sh <<'EOF'
@@ -201,6 +202,31 @@ RUN set -eux; \
 # `sage-ipython` via `#!/usr/bin/env python3`).
 RUN set -eux; \
   ln -sfn /usr/local/bin/sage /opt/ctf/bin/sage
+
+# The upstream `sagemath/sagemath` image uses an ENTRYPOINT that wraps all commands as
+# `sage -sh -c ...`, which breaks the expectation that `docker run ... bash` starts a normal bash.
+# Override ENTRYPOINT so shells and tools behave predictably in this CTF image.
+RUN set -eux; \
+  cat > /opt/ctf/entrypoint.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "${CTF_AUTO_SOURCE:-1}" != "0" ] && [ -f /opt/ctf/env.sh ]; then
+  # Ensure CTF python/pip are the defaults for any command (not just interactive bash).
+  source /opt/ctf/env.sh
+fi
+
+if [ "${1:-}" = "sage-jupyter" ]; then
+  shift
+  exec sage -n jupyter --no-browser --ip='0.0.0.0' --port=8888 "$@"
+fi
+
+exec "$@"
+EOF
+
+RUN set -eux; \
+  chmod 0755 /opt/ctf/entrypoint.sh; \
+  chown sage:sage /opt/ctf/entrypoint.sh
 
 # Source the CTF env in interactive shells by default.
 # Disable by setting `CTF_AUTO_SOURCE=0`.
@@ -247,6 +273,9 @@ RUN set -eux; \
 
 USER sage
 WORKDIR /opt
+
+ENTRYPOINT ["/opt/ctf/entrypoint.sh"]
+CMD ["bash"]
 
 RUN set -eux; \
   if [ -n "${FLATTER_REF}" ]; then \

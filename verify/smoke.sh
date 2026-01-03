@@ -27,6 +27,9 @@ grep -qF 'source /opt/ctf/env.sh' /home/sage/.bashrc
 bash -ic 'python -V' 2>&1 | grep -qF 'Python 3.13'
 bash -ic 'python3 -V' 2>&1 | grep -qF 'Python 3.13'
 bash -ic 'pip3 -V' 2>&1 | grep -qF '(python 3.13)'
+bash -ic 'command -v python3' 2>&1 | grep -qF '/opt/ctf/bin/python3'
+bash -ic 'python3 -c "import sys; assert sys.prefix==\"/opt/venvs/py313\"; import pwn; print(\"ok: bashrc python3 pwntools\")"' >/dev/null
+bash -ic 'python -c "import pwn; print(\"ok: bashrc python pwntools\")"' >/dev/null
 bash -ic 'command -v sage' 2>&1 | grep -qF '/opt/ctf/bin/sage'
 bash -ic 'sage --version' 2>&1 | grep -qF 'SageMath version 10.8'
 bash -ic 'python2 -V' 2>&1 | grep -qF 'Python 2.7'
