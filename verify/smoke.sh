@@ -12,6 +12,8 @@ echo "[smoke] python3.13 (uv venv)"
 /opt/venvs/py313/bin/python -c "import ortools; print('ok: ortools')"
 /opt/venvs/py313/bin/python -c "import zstandard; print('ok: zstandard')"
 /opt/venvs/py313/bin/python -c "import flask, httpx; print('ok: flask/httpx')"
+/opt/venvs/py313/bin/python -c "import scipy; print('ok: scipy', scipy.__version__)"
+/opt/venvs/py313/bin/python -c "import gmsm; print('ok: gmsm')"
 
 echo "[smoke] ctf shim + bashrc wiring"
 test -x /opt/ctf/env.sh
