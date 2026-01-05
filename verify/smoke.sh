@@ -16,6 +16,7 @@ echo "[smoke] python3.13 (uv venv)"
 /opt/venvs/py313/bin/python -c "import gmsm; print('ok: gmsm')"
 /opt/venvs/py313/bin/python -c "import flatn; out=flatn.reduce([[1,0,331,303],[0,1,456,225],[0,0,628,0],[0,0,0,628]]); assert len(out)==4 and len(out[0])==4; print('ok: flatn')"
 /opt/venvs/py313/bin/python -c "import fastecdsa; print('ok: fastecdsa')"
+/opt/venvs/py313/bin/python -c "import cpmpy; print('ok: cpmpy')"
 
 echo "[smoke] ctf shim + bashrc wiring"
 test -x /opt/ctf/env.sh
@@ -82,6 +83,17 @@ echo "[smoke] yafu"
 command -v yafu >/dev/null
 printf 'factor(2021)\n' | yafu >/dev/null
 
+echo "[smoke] hashpumpy (Python hash extension tool)"
+/opt/venvs/py313/bin/python -c "import hashpumpy; print('ok: hashpumpy')"
+
+echo "[smoke] hashcat"
+command -v hashcat >/dev/null
+hashcat --version >/dev/null
+
+echo "[smoke] rockyou.txt"
+test -f /usr/share/wordlists/rockyou.txt
+test -s /usr/share/wordlists/rockyou.txt
+
 echo "[smoke] gf2bv (py313)"
 /opt/venvs/py313/bin/python -c "from gf2bv import LinearSystem; lin=LinearSystem([1,1,1,1]); a,b,c,d=lin.gens(); sol=lin.solve_one([a^b^c^1,b^d,a^c^1]); assert sol is not None; print('ok: gf2bv py313')"
 
@@ -99,6 +111,7 @@ if command -v sage >/dev/null; then
     exit 1
   fi
   sage -c "print('ok: sage', (2+2))"
+  sage --python -c "from sage.features.msolve import msolve; print('ok: sage msolve', msolve().absolute_filename())"
   sage --python -c "import Crypto; print('ok: sage pycryptodome')"
   sage --python -c "import pwn; print('ok: sage pwntools')"
   sage --python -c "import paramiko, rpyc; print('ok: sage paramiko/rpyc')"
@@ -110,6 +123,7 @@ if command -v sage >/dev/null; then
   sage --python -c "import cuso; from sage.all import var; x=var('x'); solns=cuso.find_small_roots([x**2 - 1], {x: 2}); assert any(int(s[x]) in (-1, 1) for s in solns); print('ok: sage cuso')"
   sage --python -c "import lll_cvp; from sage.all import matrix, ZZ; assert lll_cvp.has_flatter; M=matrix(ZZ, [[1,2],[3,4]]); R=lll_cvp.auto_reduction(M); assert R.nrows()==2 and R.ncols()==2; print('ok: sage lll_cvp')"
   sage --python -c "import fastecdsa; print('ok: sage fastecdsa')"
+  sage --python -c "import cpmpy; print('ok: sage cpmpy')"
 else
   echo "[smoke] sage missing; skip sage checks (build with SAGE_BUILD_STEP=make)" >&2
 fi

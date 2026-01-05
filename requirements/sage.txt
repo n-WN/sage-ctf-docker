@@ -13,3 +13,4 @@ pytest==9.0.2
 ortools==9.14.6206
 zstandard==0.25.0
 fastecdsa==3.0.1
+cpmpy==0.9.28

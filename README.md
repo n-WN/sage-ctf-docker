@@ -10,20 +10,22 @@ This repository builds a reproducible Docker image for CTF crypto/reversing that
 - Sage 10.8: system `sage` CLI from the base image.
 - Rust toolchain: `rustup` (official installer), pinned toolchain via `repro.lock`.
 - JS tooling: Node.js + Bun (pinned, installed from official upstream release artifacts).
-- Tools: `flatter` (LLL accelerator), `r2` (radare2, built from source), `yafu`, `tshark`, headless Java runtime, `jadx` (DEX decompiler, CLI).
+- Tools: `flatter` (LLL accelerator), `r2` (radare2, built from source), `yafu`, `tshark`, headless Java runtime, `jadx` (DEX decompiler, CLI), `hashcat` (password recovery), `rockyou.txt` (password dictionary at `/usr/share/wordlists/`).
+- Python packages: `hashpumpy` (Hash Length Extension attack tool), installed in CTF Python 3.13.
 - Repos vendored at build-time for availability: `crypto-attacks`, `gf2bv`, `lll_cvp`, `or-tools`, `cuso`, `flatn` (cloned at pinned SHAs).
-- Python packages: `flatn` (Python wrapper for flatter, installed into both CTF Python 3.13 and Sage Python; this build uses the system `flatter` binary).
+- Python packages: `flatn` (Python wrapper for flatter, installed into both CTF Python 3.13 and Sage Python; this build uses the system `flatter` binary) and `cpmpy` (constraint programming toolkit used by lattice tooling).
 
 ## Verified (smoke)
 
 The image ships `/opt/verify/smoke.sh` which checks:
 
 - `sage --version` is **10.8 stable**, and `sage -c 'print(2+2)'` works.
-- Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`, `flask`, `httpx`, `scipy`, `gmsm`, `flatn`, `fastecdsa`.
+- Python 3.13 imports: `pwntools`, `paramiko`, `rpyc`, `unicorn`, `z3-solver`, `ortools`, `pycryptodome`, `cryptography`, `pynacl`, `zstandard`, `flask`, `httpx`, `scipy`, `gmsm`, `flatn`, `cpmpy`, `fastecdsa`, `hashpumpy`.
 - `gf2bv` runs under Python 3.13 (only; see notes below).
-- System tools present: `java`, `r2`, `tshark`, `flatter`.
+- System tools present: `java`, `r2`, `tshark`, `flatter`, `hashcat`.
+- Wordlists: `rockyou.txt` at `/usr/share/wordlists/rockyou.txt`.
 - `crypto-attacks` unit tests pass under `sage --python` (85 tests).
-- Sage Python imports: `flatn`, `cuso`, `lll_cvp`, `fastecdsa`.
+- Sage Python imports: `flatn`, `cuso`, `lll_cvp`, `cpmpy`, `fastecdsa`.
 
 ## crypto-attacks 题型索引
 
@@ -149,8 +151,24 @@ The image ships `/opt/verify/smoke.sh` which checks:
 | `bun` | `/usr/local/bin/bun` | Bun（JS runtime + package manager） |
 | `jadx` | `/usr/local/bin/jadx` | JADX CLI（Java 反编译/DEX 工具） |
 | `yafu` | `/usr/local/bin/yafu` | 高效整数分解器（从源码编译，版本固定在 `repro.lock`） |
+| `hashcat` | `/usr/local/bin/hashcat` | 密码破解工具 (v7.1.2) |
 | `rustc` | `/home/sage/.cargo/bin/rustc` | Rust 编译器（rustup，toolchain 见 `repro.lock`） |
 | `cargo` | `/home/sage/.cargo/bin/cargo` | Rust 包管理器 |
+
+### 常用字典
+
+- `rockyou.txt`: `/usr/share/wordlists/rockyou.txt` (常用密码字典)
+
+### Hash Length Extension 攻击
+
+使用 `hashpumpy` Python 包 (已安装在 CTF Python 3.13 中):
+
+```python
+import hashpumpy
+# hashpumpy.hashpump(hex_digest, original_data, data_to_add, key_length)
+```
+
+或命令行: `python -c "import hashpumpy; help(hashpumpy.hashpump)"`
 
 ### 默认 shell 行为（避免踩坑）
 

@@ -75,8 +75,12 @@ tag_sha() {
   local tag="$2"
   local sha=""
 
-  # Prefer annotated tag deref (^{}) to get the commit SHA.
+  # Prefer annotated tag deref (^{}) to get the commit SHA, but gracefully
+  # fall back to lightweight tags if needed.
   sha="$(git ls-remote "$repo" "refs/tags/${tag}^{}" | awk '{print $1; exit}')"
+  if [ -z "${sha}" ]; then
+    sha="$(git ls-remote "$repo" "refs/tags/${tag}" | awk '{print $1; exit}')"
+  fi
   if [ -n "${sha}" ]; then
     echo "${sha}"
     return 0
@@ -84,6 +88,9 @@ tag_sha() {
 
   # Common fallback if upstream uses a 'v' prefix.
   sha="$(git ls-remote "$repo" "refs/tags/v${tag}^{}" | awk '{print $1; exit}')"
+  if [ -z "${sha}" ]; then
+    sha="$(git ls-remote "$repo" "refs/tags/v${tag}" | awk '{print $1; exit}')"
+  fi
   if [ -n "${sha}" ]; then
     echo "${sha}"
     return 0
@@ -196,6 +203,8 @@ write_lock() {
   local sage_repo="https://github.com/sagemath/sage.git"
   local flatter_repo="https://github.com/keeganryan/flatter.git"
   local radare2_repo="https://github.com/radareorg/radare2.git"
+  local flint_repo="https://github.com/flintlib/flint.git"
+  local msolve_repo="https://github.com/algebraic-solving/msolve.git"
   local gf2bv_repo="https://github.com/maple3142/gf2bv.git"
   local lll_cvp_repo="https://github.com/maple3142/lll_cvp.git"
   local cuso_repo="https://github.com/keeganryan/cuso.git"
@@ -232,10 +241,12 @@ write_lock() {
   fi
   jadx_sha256="$(resolve_jadx_sha256 "${jadx_version}")"
 
-  local sage_ref flatter_ref radare2_ref gf2bv_ref lll_cvp_ref cuso_ref flatn_ref yafu_ref crypto_attacks_ref or_tools_ref
+  local sage_ref flatter_ref radare2_ref flint_ref msolve_ref gf2bv_ref lll_cvp_ref cuso_ref flatn_ref yafu_ref crypto_attacks_ref or_tools_ref
   sage_ref="$(tag_sha "$sage_repo" "${SAGE_VERSION}")"
   flatter_ref="$(head_sha "$flatter_repo")"
   radare2_ref="$(head_sha "$radare2_repo")"
+  flint_ref="$(tag_sha "$flint_repo" "3.1.3")"
+  msolve_ref="$(tag_sha "$msolve_repo" "0.9.4")"
   gf2bv_ref="$(head_sha "$gf2bv_repo")"
   lll_cvp_ref="$(head_sha "$lll_cvp_repo")"
   cuso_ref="$(head_sha "$cuso_repo")"
@@ -272,6 +283,12 @@ FLATTER_REF="${flatter_ref}"
 
 RADARE2_REPO="${radare2_repo}"
 RADARE2_REF="${radare2_ref}"
+
+FLINT_REPO="${flint_repo}"
+FLINT_REF="${flint_ref}"
+
+MSOLVE_REPO="${msolve_repo}"
+MSOLVE_REF="${msolve_ref}"
 
 GF2BV_REPO="${gf2bv_repo}"
 GF2BV_REF="${gf2bv_ref}"
@@ -321,6 +338,10 @@ source "${LOCK_FILE}"
 : "${FLATN_REF:?missing FLATN_REF in repro.lock (run: ./repro-build.sh --update)}"
 : "${LLL_CVP_REPO:?missing LLL_CVP_REPO in repro.lock (run: ./repro-build.sh --update)}"
 : "${LLL_CVP_REF:?missing LLL_CVP_REF in repro.lock (run: ./repro-build.sh --update)}"
+: "${FLINT_REPO:?missing FLINT_REPO in repro.lock (run: ./repro-build.sh --update)}"
+: "${FLINT_REF:?missing FLINT_REF in repro.lock (run: ./repro-build.sh --update)}"
+: "${MSOLVE_REPO:?missing MSOLVE_REPO in repro.lock (run: ./repro-build.sh --update)}"
+: "${MSOLVE_REF:?missing MSOLVE_REF in repro.lock (run: ./repro-build.sh --update)}"
 
 BUILD_ARGS=(
   --build-arg "BASE_IMAGE=${BASE_IMAGE}"
@@ -341,6 +362,10 @@ BUILD_ARGS=(
   --build-arg "FLATTER_REF=${FLATTER_REF}"
   --build-arg "RADARE2_REPO=${RADARE2_REPO}"
   --build-arg "RADARE2_REF=${RADARE2_REF}"
+  --build-arg "FLINT_REPO=${FLINT_REPO}"
+  --build-arg "FLINT_REF=${FLINT_REF}"
+  --build-arg "MSOLVE_REPO=${MSOLVE_REPO}"
+  --build-arg "MSOLVE_REF=${MSOLVE_REF}"
   --build-arg "GF2BV_REPO=${GF2BV_REPO}"
   --build-arg "GF2BV_REF=${GF2BV_REF}"
   --build-arg "LLL_CVP_REPO=${LLL_CVP_REPO}"

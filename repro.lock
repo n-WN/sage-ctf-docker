@@ -26,6 +26,12 @@ FLATTER_REF="d2b8026f29b4a69e987b15d4b240f8a5053275d3"
 RADARE2_REPO="https://github.com/radareorg/radare2.git"
 RADARE2_REF="1362812d50f5c2316567968e3e47d08ea719dab5"
 
+FLINT_REPO="https://github.com/flintlib/flint.git"
+FLINT_REF="a300f5a741b8f12cf9b6d4236631f62260f805a4"
+
+MSOLVE_REPO="https://github.com/algebraic-solving/msolve.git"
+MSOLVE_REF="8f84271426f2e8a08ee822bf3ac76592d4c818e4"
+
 GF2BV_REPO="https://github.com/maple3142/gf2bv.git"
 GF2BV_REF="4801fe78d50797ec9aee6f7fff5251e4a5a08f3f"
 
