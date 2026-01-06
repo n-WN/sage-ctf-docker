@@ -65,7 +65,7 @@ RUN set -eux; \
     libssl-dev libffi-dev libbz2-dev liblzma-dev zlib1g-dev \
     libreadline-dev libsqlite3-dev libncurses-dev libgdbm-dev libnsl-dev \
     cmake ninja-build \
-    gdb strace \
+    gdb strace ltrace bsdmainutils vim-common xxd file \
     libgmp-dev libecm-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
     libm4ri-dev \
     ripgrep fd-find \
