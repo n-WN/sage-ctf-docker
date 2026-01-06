@@ -33,7 +33,6 @@ pycipher==0.5.2
 bls==0.3.0
 bplib==0.0.6
 petlib==0.0.45
-ed25519==1.5
 beautifulsoup4==4.14.3
 pandas==2.3.3
 pillow==12.1.0
