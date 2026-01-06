@@ -98,6 +98,7 @@ COPY requirements/py313.txt /tmp/requirements-py313.txt
 RUN set -eux; \
   uv python install 3.13; \
   uv venv /opt/venvs/py313 --python 3.13; \
+  /opt/venvs/py313/bin/python -m pip install --upgrade pip setuptools wheel; \
   uv pip install --python /opt/venvs/py313/bin/python -r /tmp/requirements-py313.txt; \
   /opt/venvs/py313/bin/python -V
 
@@ -123,6 +124,7 @@ COPY requirements/py27.txt /tmp/requirements-py27.txt
 RUN set -eux; \
   micromamba create -y -n py27 -c conda-forge python=2.7 pip; \
   micromamba run -n py27 python -V; \
+  micromamba run -n py27 python -m pip install --upgrade pip setuptools; \
   micromamba run -n py27 python -m pip install -r /tmp/requirements-py27.txt; \
   printf '#!/usr/bin/env bash\nexec micromamba run -n py27 python \"$@\"\n' > /usr/local/bin/py27; \
   chmod +x /usr/local/bin/py27; \
@@ -256,6 +258,7 @@ COPY requirements/sage.txt /tmp/requirements-sage.txt
 RUN set -eux; \
   if [ "${ENABLE_SAGE}" = "1" ] && [ "${SAGE_BUILD_STEP}" = "make" ]; then \
     SAGE_PY="$(sage --python -c 'import sys; print(sys.executable)')"; \
+    "${SAGE_PY}" -m pip install --upgrade pip setuptools wheel; \
     uv pip install --python "${SAGE_PY}" -r /tmp/requirements-sage.txt; \
   fi
 

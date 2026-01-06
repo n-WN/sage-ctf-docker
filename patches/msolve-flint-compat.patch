@@ -1,0 +1,41 @@
+diff --git a/src/upolmat/nmod_poly_mat_pmbasis.h b/src/upolmat/nmod_poly_mat_pmbasis.h
+index 840b09b..0a9b8f6 100644
+--- a/src/upolmat/nmod_poly_mat_pmbasis.h
++++ b/src/upolmat/nmod_poly_mat_pmbasis.h
+@@ -76,7 +76,14 @@
+ 
+ #include <flint/flint.h>
+-#include <flint/nmod_types.h>
++#if defined(__has_include)
++#  if __has_include(<flint/nmod_types.h>)
++#    include <flint/nmod_types.h>
++#  else
++#    include <flint/nmod_mat.h>
++#  endif
++#else
++#  include <flint/nmod_types.h>
++#endif
+ #include <flint/fmpz.h>
+ #include <flint/nmod_poly.h>
+ #include <flint/nmod_poly_mat.h>
+diff --git a/src/upolmat/nmod_poly_mat_utils.h b/src/upolmat/nmod_poly_mat_utils.h
+index c0193a4..ffb07ea 100644
+--- a/src/upolmat/nmod_poly_mat_utils.h
++++ b/src/upolmat/nmod_poly_mat_utils.h
+@@ -33,7 +33,14 @@
+  */
+ 
+ #include <flint/flint.h>
+-#include <flint/nmod_types.h>
++#if defined(__has_include)
++#  if __has_include(<flint/nmod_types.h>)
++#    include <flint/nmod_types.h>
++#  else
++#    include <flint/nmod_mat.h>
++#  endif
++#else
++#  include <flint/nmod_types.h>
++#endif
+ #include <flint/fmpz_types.h> // for fmpz_mat degree matrix
+ #include <flint/nmod_poly.h> // for nmod_poly_swap
+ 

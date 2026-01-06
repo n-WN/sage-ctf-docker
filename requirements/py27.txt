@@ -8,8 +8,6 @@ pyasn1==0.4.8
 ecdsa==0.18.0
 numpy==1.16.6
 reedsolo==1.5.4
-# Py2 compatible tools (limited selection, many packages dropped py27 support)
+# Py2 compatible tools (limited selection)
 mpmath==1.0.0
-pandas==0.20.3
-pillow==5.4.1
 beautifulsoup4==4.9.3

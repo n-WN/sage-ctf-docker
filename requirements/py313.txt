@@ -25,13 +25,8 @@ fastecdsa==3.0.1
 cpmpy==0.9.28
 numpy==1.26.4
 reedsolo==1.7.0
-# Additional crypto/CTF tools (from log analysis)
-randcrack==0.2.0
+# Additional crypto/CTF tools (from log analysis, stable versions only)
 mpmath==1.3.0
-pycipher==0.5.2
-bls==0.3.0
-bplib==0.0.6
-petlib==0.0.45
 beautifulsoup4==4.14.3
 pandas==2.3.3
 pillow==12.1.0
