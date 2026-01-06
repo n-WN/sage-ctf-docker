@@ -6,3 +6,5 @@ pyelftools==0.27
 pwntools==3.13.0
 pyasn1==0.4.8
 ecdsa==0.18.0
+numpy==1.16.6
+reedsolo==1.5.4

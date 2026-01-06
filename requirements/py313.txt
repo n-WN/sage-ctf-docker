@@ -23,3 +23,5 @@ scipy==1.16.3
 gmsm==1.4.5
 fastecdsa==3.0.1
 cpmpy==0.9.28
+numpy==1.26.4
+reedsolo==1.7.0

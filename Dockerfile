@@ -37,9 +37,12 @@ RUN set -eux; \
   apt-get update; \
   apt-get install -y --no-install-recommends debconf-utils; \
   echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections; \
+  groupadd -r wireshark || true; \
   apt-get install -y --no-install-recommends \
     # basics
     ca-certificates curl wget git bash coreutils findutils xz-utils bzip2 unzip zip \
+    # binary analysis tools
+    bsdmainutils vim-common xxd file binutils strace ltrace \
     # runtime tools
     default-jre-headless tshark \
     # sage minimal prereqs (+bootstrap)
@@ -51,9 +54,14 @@ RUN set -eux; \
     libreadline-dev libsqlite3-dev libncurses-dev libgdbm-dev libnsl-dev \
     # flatter deps
     cmake ninja-build \
-    libgmp-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
+    libgmp-dev libmpfr-dev libmpc-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev \
     # gf2bv deps
     libm4ri-dev \
+    # CTF tools
+    netcat-traditional imagemagick dnsutils gdb \
+    sleuthkit binwalk steghide exiftool \
+    tcpdump whois nmap \
+    john fcrackzip fdisk parallel \
   ; \
   rm -rf /var/lib/apt/lists/*
 
@@ -198,7 +206,8 @@ case "$-" in
 esac
 # ---------------------------------------------------------
 EOF
-  ; \
+
+RUN set -eux; \
   chown sage:sage /home/sage/.bashrc
 
 USER sage
