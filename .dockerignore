@@ -2,4 +2,6 @@
 **/.git
 **/__pycache__
 **/*.pyc
+# Note: .gh-config/ is intentionally excluded from this list
+# so it can be explicitly COPY'd into the Dockerfile for auth persistence
 

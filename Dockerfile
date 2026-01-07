@@ -213,6 +213,10 @@ RUN set -eux; \
   chown sage:sage /home/sage/.bashrc
 
 USER sage
+
+# Persist GitHub CLI authentication to container
+COPY --chown=sage:sage .gh-config/ /home/sage/.config/gh/
+
 WORKDIR /opt
 
 RUN set -eux; \

@@ -383,6 +383,10 @@ RUN set -eux; \
   chown -R sage:sage /opt/src /opt/verify /opt/patches /opt/work
 
 USER sage
+
+# Persist GitHub CLI authentication to container
+COPY --chown=sage:sage .gh-config/ /home/sage/.config/gh/
+
 WORKDIR /opt/work
 
 ENTRYPOINT ["/opt/ctf/entrypoint.sh"]
